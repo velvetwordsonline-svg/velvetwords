@@ -1,0 +1,253 @@
+const mongoose = require('mongoose');
+const express = require('express');
+const { Story, Chapter } = require('../models/models');
+const { checkSubscriptionAccess } = require('../middleware/subscriptionMiddleware');
+
+const router = express.Router();
+
+// Get all published stories
+router.get('/stories', async (req, res) => {
+  try {
+    const { lang = 'en', category } = req.query;
+    const query = { status: 'published' };
+    if (category) query.category = category;
+
+    const stories = await Story.find(query).sort({ createdAt: -1 });
+    
+    // Format response based on language
+    const formatted = stories.map(story => ({
+      id: story._id,
+      title: story.title[lang] || story.title.en,
+      author: story.author,
+      description: story.description[lang] || story.description.en,
+      thumbnail: story.thumbnail,
+      category: story.category,
+      totalChapters: story.totalChapters,
+      rating: story.rating,
+      reviewCount: story.reviewCount,
+      createdAt: story.createdAt
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single story by ID with first chapter
+router.get('/stories/:id', async (req, res) => {
+  try {
+    const { lang = 'en' } = req.query;
+    const storyId = req.params.id;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(storyId)) {
+      return res.status(400).json({ error: 'Invalid story ID' });
+    }
+    
+    const story = await Story.findById(new mongoose.Types.ObjectId(storyId));
+    
+    if (!story) {
+      return res.status(404).json({ error: 'Story not found' });
+    }
+
+    // Get first chapter automatically
+    const firstChapter = await Chapter.findOne({ storyId: new mongoose.Types.ObjectId(storyId) })
+      .sort({ chapterNumber: 1 });
+
+    const response = {
+      id: story._id,
+      title: story.title[lang] || story.title.en,
+      author: story.author,
+      description: story.description[lang] || story.description.en,
+      thumbnail: story.thumbnail,
+      category: story.category,
+      totalChapters: story.totalChapters,
+      rating: story.rating,
+      reviewCount: story.reviewCount,
+      createdAt: story.createdAt
+    };
+
+    // Include first chapter if exists
+    if (firstChapter) {
+      const content = firstChapter.content && firstChapter.content[lang] ? 
+        firstChapter.content[lang] : 
+        (firstChapter.content && firstChapter.content.en ? firstChapter.content.en : []);
+
+      response.firstChapter = {
+        id: firstChapter._id,
+        chapterNumber: firstChapter.chapterNumber,
+        title: (firstChapter.title && firstChapter.title[lang]) ? firstChapter.title[lang] : 
+               (firstChapter.title && firstChapter.title.en ? firstChapter.title.en : `Chapter ${firstChapter.chapterNumber}`),
+        content: content,
+        estimatedReadTime: firstChapter.estimatedReadTime || 5
+      };
+    }
+
+    res.json(response);
+  } catch (error) {
+    console.error('Story fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get chapters for a story
+router.get('/stories/:id/chapters', async (req, res) => {
+  try {
+    const { lang = 'en' } = req.query;
+    const storyId = req.params.id;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(storyId)) {
+      return res.status(400).json({ error: 'Invalid story ID' });
+    }
+
+    const chapters = await Chapter.find({ storyId: new mongoose.Types.ObjectId(storyId) })
+      .sort({ chapterNumber: 1 });
+
+    const formatted = chapters.map(chapter => ({
+      id: chapter._id,
+      chapterNumber: chapter.chapterNumber,
+      title: (chapter.title && chapter.title[lang]) ? chapter.title[lang] : 
+             (chapter.title && chapter.title.en ? chapter.title.en : `Chapter ${chapter.chapterNumber}`),
+      estimatedReadTime: chapter.estimatedReadTime || 5
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Chapters fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific chapter by storyId and chapterId
+router.get('/stories/:storyId/chapters/:chapterId', async (req, res) => {
+  try {
+    const { lang = 'en' } = req.query;
+    const { storyId, chapterId } = req.params;
+    
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(storyId) || !mongoose.Types.ObjectId.isValid(chapterId)) {
+      return res.status(400).json({ error: 'Invalid story or chapter ID' });
+    }
+
+    // Find chapter that belongs to the story
+    const chapter = await Chapter.findOne({ 
+      _id: new mongoose.Types.ObjectId(chapterId),
+      storyId: new mongoose.Types.ObjectId(storyId)
+    });
+
+    if (!chapter) {
+      // Try to get first chapter if specific chapter not found
+      const firstChapter = await Chapter.findOne({ 
+        storyId: new mongoose.Types.ObjectId(storyId) 
+      }).sort({ chapterNumber: 1 });
+      
+      if (!firstChapter) {
+        return res.status(404).json({ error: 'No chapters found for this story' });
+      }
+      
+      // Return first chapter instead
+      const content = firstChapter.content && firstChapter.content[lang] ? 
+        firstChapter.content[lang] : 
+        (firstChapter.content && firstChapter.content.en ? firstChapter.content.en : []);
+
+      return res.json({
+        id: firstChapter._id,
+        storyId: firstChapter.storyId,
+        chapterNumber: firstChapter.chapterNumber,
+        title: (firstChapter.title && firstChapter.title[lang]) ? firstChapter.title[lang] : 
+               (firstChapter.title && firstChapter.title.en ? firstChapter.title.en : `Chapter ${firstChapter.chapterNumber}`),
+        content: content,
+        estimatedReadTime: firstChapter.estimatedReadTime || 5,
+        isFirstChapter: true
+      });
+    }
+
+    // Return requested chapter
+    const content = chapter.content && chapter.content[lang] ? 
+      chapter.content[lang] : 
+      (chapter.content && chapter.content.en ? chapter.content.en : []);
+
+    res.json({
+      id: chapter._id,
+      storyId: chapter.storyId,
+      chapterNumber: chapter.chapterNumber,
+      title: (chapter.title && chapter.title[lang]) ? chapter.title[lang] : 
+             (chapter.title && chapter.title.en ? chapter.title.en : `Chapter ${chapter.chapterNumber}`),
+      content: content,
+      estimatedReadTime: chapter.estimatedReadTime || 5
+    });
+  } catch (error) {
+    console.error('Chapter fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single chapter content (with subscription check)
+router.get('/chapters/:id', checkSubscriptionAccess, async (req, res) => {
+  try {
+    const { lang = 'en' } = req.query;
+    const chapterId = req.params.id;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(chapterId)) {
+      return res.status(400).json({ error: 'Invalid chapter ID' });
+    }
+
+    const chapter = await Chapter.findById(new mongoose.Types.ObjectId(chapterId));
+
+    if (!chapter) {
+      return res.status(404).json({ error: 'Chapter not found' });
+    }
+
+    // Ensure content exists for the requested language
+    const content = chapter.content && chapter.content[lang] ? 
+      chapter.content[lang] : 
+      (chapter.content && chapter.content.en ? chapter.content.en : []);
+
+    res.json({
+      id: chapter._id,
+      storyId: chapter.storyId,
+      chapterNumber: chapter.chapterNumber,
+      title: (chapter.title && chapter.title[lang]) ? chapter.title[lang] : 
+             (chapter.title && chapter.title.en ? chapter.title.en : `Chapter ${chapter.chapterNumber}`),
+      content: content,
+      estimatedReadTime: chapter.estimatedReadTime || 5
+    });
+  } catch (error) {
+    console.error('Chapter fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get trending stories
+router.get('/trending', async (req, res) => {
+  try {
+    const { lang = 'en' } = req.query;
+    const stories = await Story.find({ 
+      status: 'published',
+      isTrending: true 
+    })
+    .sort({ trendingOrder: 1, createdAt: -1 })
+    .limit(12);
+
+    const formatted = stories.map(story => ({
+      _id: story._id,
+      title: story.title[lang] || story.title.en,
+      author: story.author,
+      thumbnail: story.thumbnail,
+      category: story.category,
+      totalChapters: story.totalChapters,
+      rating: story.rating,
+      reviewCount: story.reviewCount,
+      isTrending: true
+    }));
+
+    res.json({ data: formatted });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;

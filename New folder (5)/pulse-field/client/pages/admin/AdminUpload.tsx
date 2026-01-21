@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Helper function to convert file to base64
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
 export default function AdminUpload() {
   const [formData, setFormData] = useState({
     title: '',
@@ -44,7 +54,7 @@ export default function AdminUpload() {
         author: formData.author,
         description: formData.description,
         category: formData.category,
-        coverImage: files.thumbnail ? URL.createObjectURL(files.thumbnail) : null,
+        coverImage: files.thumbnail ? await convertFileToBase64(files.thumbnail) : null,
         thumbnail: files.thumbnail ? `/thumbnails/${Date.now()}-${files.thumbnail.name}` : null,
         totalChapters: 1,
         createdAt: new Date().toISOString()

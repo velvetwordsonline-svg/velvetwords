@@ -13,8 +13,7 @@
     "start": "concurrently \"npm run start-backend\" \"npm run start-admin\"",
     "start-backend": "cd backend && npm start",
     "start-admin": "cd admin && npm start",
-    "build": "npm run build-backend && npm run build-admin",
-    "build-backend": "cd backend && npm run build",
+    "build": "npm run build-admin",
     "build-admin": "cd admin && npm run build",
     "seed": "cd backend && npm run seed",
     "test": "echo \"Error: no test specified\" && exit 1"

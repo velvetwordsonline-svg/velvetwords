@@ -37,32 +37,28 @@ export default function AdminUpload() {
       console.log('Form data:', formData);
       console.log('Files:', files);
       
-      const uploadData = new FormData();
-      uploadData.append('title', formData.title);
-      uploadData.append('author', formData.author);
-      uploadData.append('description', formData.description);
-      uploadData.append('category', formData.category);
-      if (files.document) uploadData.append('document', files.document);
-      if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
-
-      const token = localStorage.getItem('adminToken');
-      console.log('Using token:', token);
+      // Create story object for localStorage
+      const newStory = {
+        id: Date.now().toString(),
+        title: formData.title,
+        author: formData.author,
+        description: formData.description,
+        category: formData.category,
+        coverImage: files.thumbnail ? URL.createObjectURL(files.thumbnail) : null,
+        thumbnail: files.thumbnail ? `/thumbnails/${Date.now()}-${files.thumbnail.name}` : null,
+        totalChapters: 1,
+        createdAt: new Date().toISOString()
+      };
       
-      const response = await fetch('https://www.velvetwords.online/api/admin/upload-story', {
-        method: 'POST',
-        body: uploadData
-      });
+      // Save to localStorage
+      const existingStories = JSON.parse(localStorage.getItem('stories') || '[]');
+      existingStories.push(newStory);
+      localStorage.setItem('stories', JSON.stringify(existingStories));
       
-      console.log('Response status:', response.status);
+      console.log('Story saved to localStorage:', newStory);
       
-      if (response.ok) {
-        alert('Story uploaded successfully to database!');
-        navigate('/admin/dashboard');
-      } else {
-        const errorText = await response.text();
-        console.log('Error response:', errorText);
-        alert(`Upload failed: ${errorText}`);
-      }
+      alert('Story uploaded successfully!');
+      navigate('/admin/dashboard');
       
     } catch (error) {
       console.error('Upload error:', error);

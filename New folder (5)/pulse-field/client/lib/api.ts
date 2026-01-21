@@ -4,14 +4,16 @@ const API_BASE = 'https://www.velvetwords.online/api';
 const IMAGE_BASE = 'https://www.velvetwords.online';
 
 export async function getStoriesByCategory(category: string | null = null, lang: string = 'en') {
-  const params: any = { lang };
-  if (category) params.category = category;
+  // Use localStorage as primary source
+  const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
   
-  const { data } = await axios.get(`${API_BASE}/stories`, { params });
-  return data.map((story: any) => ({
-    ...story,
-    coverImage: story.thumbnail ? `${IMAGE_BASE}${story.thumbnail}` : story.coverImage
-  }));
+  // Filter by category if specified
+  let filteredStories = localStories;
+  if (category) {
+    filteredStories = localStories.filter((story: any) => story.category === category);
+  }
+  
+  return filteredStories;
 }
 
 export async function getStory(id: string, lang: string = 'en') {

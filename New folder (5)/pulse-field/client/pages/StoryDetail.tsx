@@ -3,17 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Star, Clock, Lock, Play, Bookmark } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import AccessGateModal from "@/components/AccessGateModal";
-import AuthModal from "@/components/AuthModal";
+import SubscriptionPopup from "@/components/SubscriptionPopup";
 import { useApp } from "@/contexts/AppContext";
 
 export default function StoryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStoryById, getChaptersByStoryId, canAccessChapter, isLoggedIn } = useApp();
-  const [showAccessGate, setShowAccessGate] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const { getStoryById, getChaptersByStoryId, canAccessChapter, verifyPhoneNumber, selectSubscription } = useApp();
+  const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
   const story = id ? getStoryById(id) : null;
   const chapters = id ? getChaptersByStoryId(id) : [];
@@ -39,7 +36,7 @@ export default function StoryDetail() {
 
   const handleChapterClick = (chapterNumber: number, chapterId: string) => {
     if (chapterNumber > 1 && !canAccessChapter(chapterNumber)) {
-      setShowAuthModal(true);
+      setShowSubscriptionPopup(true);
       return;
     }
 
@@ -50,18 +47,10 @@ export default function StoryDetail() {
     }
   };
 
-  const handleAccessGateSuccess = () => {
-    setShowAccessGate(false);
-    if (selectedChapterId) {
-      const chapter = chapters.find((c) => c.id === selectedChapterId);
-      if (chapter) {
-        navigate(`/reader/${id}/${selectedChapterId}`);
-      }
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
+  const handleSubscriptionSuccess = (phone: string, plan: string) => {
+    verifyPhoneNumber(phone);
+    selectSubscription(plan as "weekly" | "monthly" | "3-month");
+    setShowSubscriptionPopup(false);
     // Reload page to refresh access
     window.location.reload();
   };
@@ -213,17 +202,10 @@ export default function StoryDetail() {
         </div>
       </div>
 
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-      />
-
-      {/* Access Gate Modal */}
-      <AccessGateModal
-        isOpen={showAccessGate}
-        onClose={() => setShowAccessGate(false)}
-        onSuccess={handleAccessGateSuccess}
+      <SubscriptionPopup
+        isOpen={showSubscriptionPopup}
+        onClose={() => setShowSubscriptionPopup(false)}
+        onSuccess={handleSubscriptionSuccess}
       />
 
       <Footer />

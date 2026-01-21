@@ -1,23 +1,45 @@
 import { useNavigate } from "react-router-dom";
-import { LogOut, Edit2, Zap, Clock, CheckCircle, Lock } from "lucide-react";
-import { useEffect } from "react";
+import { LogOut, Edit2, Zap, Clock, CheckCircle, Lock, User } from "lucide-react";
+import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import StoryCard from "@/components/StoryCard";
+import SubscriptionPopup from "@/components/SubscriptionPopup";
 import { useApp } from "@/contexts/AppContext";
 
 export default function Account() {
   const navigate = useNavigate();
-  const { user, isLoggedIn, stories, getReadingProgress, getChaptersByStoryId, logout, updateReadingProgress } = useApp();
+  const { user, isLoggedIn, stories, getReadingProgress, getChaptersByStoryId, logout, updateReadingProgress, verifyPhoneNumber, selectSubscription } = useApp();
+  const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
+  // If user is not logged in, show login interface
   if (!isLoggedIn || !user) {
+    const handleSubscriptionSuccess = (phone: string, plan: string) => {
+      verifyPhoneNumber(phone);
+      selectSubscription(plan as "weekly" | "monthly" | "3-month");
+      setShowSubscriptionPopup(false);
+    };
+
     return (
       <div className="bg-black min-h-screen">
         <Navigation />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Sign In Required</h1>
-          <p className="text-gray-400 mb-8">Please log in to access your account and reading history.</p>
+          <User className="w-24 h-24 text-gray-600 mx-auto mb-8" />
+          <h1 className="text-4xl font-bold text-white mb-4">Account Access</h1>
+          <p className="text-gray-400 mb-8 text-lg">Login to access interesting stories</p>
+          <button
+            onClick={() => setShowSubscriptionPopup(true)}
+            className="px-8 py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-all shadow-[0_0_15px_rgba(124,58,237,0.4)]"
+          >
+            Login
+          </button>
         </div>
+        
+        <SubscriptionPopup
+          isOpen={showSubscriptionPopup}
+          onClose={() => setShowSubscriptionPopup(false)}
+          onSuccess={handleSubscriptionSuccess}
+        />
+        
         <Footer />
       </div>
     );

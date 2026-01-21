@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Reader from "@/components/Reader";
-import AuthModal from "@/components/AuthModal";
+import SubscriptionPopup from "@/components/SubscriptionPopup";
 import { useApp } from "@/contexts/AppContext";
 
 // API Configuration
@@ -59,8 +59,9 @@ export default function ReaderPage() {
         const chapterNum = chapterData.chapterNumber;
         
         // Check if user can access this chapter
-        if (!canAccessChapter(chapterNum)) {
+        if (chapterNum > 1 && !canAccessChapter(chapterNum)) {
           setShowAuthModal(true);
+          setLoading(false);
           return;
         }
 
@@ -132,10 +133,9 @@ export default function ReaderPage() {
 
   const chapters = getChaptersByStoryId(storyId);
 
-  const handleAuthSuccess = () => {
-    // Create user with phone and subscription
-    verifyPhoneNumber("1234567890"); // This would come from the modal
-    selectSubscription("monthly"); // This would come from the modal
+  const handleAuthSuccess = (phone: string, plan: string) => {
+    verifyPhoneNumber(phone);
+    selectSubscription(plan as "weekly" | "monthly" | "3-month");
     setShowAuthModal(false);
     // Reload the chapter
     window.location.reload();
@@ -158,7 +158,7 @@ export default function ReaderPage() {
         }}
       />
       
-      <AuthModal
+      <SubscriptionPopup
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}

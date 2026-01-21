@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Helper function to convert file to base64
 const convertFileToBase64 = (file: File): Promise<string> => {
@@ -12,12 +12,32 @@ const convertFileToBase64 = (file: File): Promise<string> => {
 };
 
 export default function AdminUpload() {
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
+  const isEditing = !!editId;
+  
   const [formData, setFormData] = useState({
     title: '',
-    author: 'Office Chemistry', // Initialize with first subcategory
+    author: 'Office Chemistry',
     description: '',
     category: 'everyday-chemistry'
   });
+
+  // Load story data if editing
+  useEffect(() => {
+    if (isEditing && editId) {
+      const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+      const storyToEdit = stories.find((s: any) => s.id === editId);
+      if (storyToEdit) {
+        setFormData({
+          title: storyToEdit.title,
+          author: storyToEdit.author,
+          description: storyToEdit.description,
+          category: storyToEdit.category
+        });
+      }
+    }
+  }, [isEditing, editId]);
 
   const categorySubcategories = {
     'everyday-chemistry': ['Office Chemistry', 'Unspoken Desire'],
@@ -47,33 +67,65 @@ export default function AdminUpload() {
       console.log('Form data:', formData);
       console.log('Files:', files);
       
-      // Create story object for localStorage
-      const newStory = {
-        id: Date.now().toString(),
-        title: formData.title,
-        author: formData.author,
-        description: formData.description,
-        category: formData.category,
-        coverImage: files.thumbnail ? await convertFileToBase64(files.thumbnail) : null,
-        thumbnail: files.thumbnail ? `/thumbnails/${Date.now()}-${files.thumbnail.name}` : null,
-        totalChapters: 1,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Save to localStorage
-      const existingStories = JSON.parse(localStorage.getItem('stories') || '[]');
-      existingStories.push(newStory);
-      localStorage.setItem('stories', JSON.stringify(existingStories));
-      
-      // Trigger storage event for other tabs/components
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'stories',
-        newValue: JSON.stringify(existingStories)
-      }));
-      
-      console.log('Story saved to localStorage:', newStory);
-      
-      alert('Story uploaded successfully!');
+      if (isEditing && editId) {
+        // Update existing story
+        const existingStories = JSON.parse(localStorage.getItem('stories') || '[]');
+        
+        // Handle thumbnail conversion if new file is uploaded
+        let newCoverImage = null;
+        if (files.thumbnail) {
+          newCoverImage = await convertFileToBase64(files.thumbnail);
+        }
+        
+        const updatedStories = existingStories.map((story: any) => {
+          if (story.id === editId) {
+            return {
+              ...story,
+              title: formData.title,
+              author: formData.author,
+              description: formData.description,
+              category: formData.category,
+              coverImage: newCoverImage || story.coverImage
+            };
+          }
+          return story;
+        });
+        
+        localStorage.setItem('stories', JSON.stringify(updatedStories));
+        
+        // Trigger storage event
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'stories',
+          newValue: JSON.stringify(updatedStories)
+        }));
+        
+        alert('Story updated successfully!');
+      } else {
+        // Create new story
+        const newStory = {
+          id: Date.now().toString(),
+          title: formData.title,
+          author: formData.author,
+          description: formData.description,
+          category: formData.category,
+          coverImage: files.thumbnail ? await convertFileToBase64(files.thumbnail) : null,
+          thumbnail: files.thumbnail ? `/thumbnails/${Date.now()}-${files.thumbnail.name}` : null,
+          totalChapters: 1,
+          createdAt: new Date().toISOString()
+        };
+        
+        const existingStories = JSON.parse(localStorage.getItem('stories') || '[]');
+        existingStories.push(newStory);
+        localStorage.setItem('stories', JSON.stringify(existingStories));
+        
+        // Trigger storage event
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'stories',
+          newValue: JSON.stringify(existingStories)
+        }));
+        
+        alert('Story uploaded successfully!');
+      }
       navigate('/categories'); // Redirect to categories to see the story
       
     } catch (error) {
@@ -105,7 +157,9 @@ export default function AdminUpload() {
       </nav>
 
       <div className="max-w-2xl mx-auto bg-[#050505] p-8 rounded-xl shadow-[0_0_30px_rgba(124,58,237,0.3)] border border-purple-600">
-        <h1 className="text-2xl font-bold mb-6 text-white">Upload New Story</h1>
+        <h1 className="text-2xl font-bold mb-6 text-white">
+          {isEditing ? 'Edit Story' : 'Upload New Story'}
+        </h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -177,7 +231,7 @@ export default function AdminUpload() {
             <input
               type="file"
               accept=".docx"
-              required
+              required={!isEditing}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               onChange={(e) => setFiles({...files, document: e.target.files?.[0] || null})}
             />
@@ -190,7 +244,7 @@ export default function AdminUpload() {
             <input
               type="file"
               accept="image/*"
-              required
+              required={!isEditing}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               onChange={(e) => setFiles({...files, thumbnail: e.target.files?.[0] || null})}
             />
@@ -201,7 +255,7 @@ export default function AdminUpload() {
             disabled={loading}
             className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
           >
-            {loading ? 'Uploading...' : 'Upload Story'}
+            {loading ? (isEditing ? 'Updating...' : 'Uploading...') : (isEditing ? 'Update Story' : 'Upload Story')}
           </button>
         </form>
       </div>

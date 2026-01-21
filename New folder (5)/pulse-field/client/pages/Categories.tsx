@@ -5,12 +5,12 @@ import StoryDetailSlider from "@/components/StoryDetailSlider";
 import { getStoriesByCategory } from "@/lib/api";
 
 const categories = [
-  { id: "slow-emotional", name: "Slow & Emotional Romance", count: 12 },
-  { id: "forbidden-risky", name: "Forbidden & Risky Desire", count: 15 },
-  { id: "midnight-confession", name: "Midnight & Confession Stories", count: 8 },
-  { id: "everyday-chemistry", name: "Everyday Chemistry", count: 10 },
-  { id: "city-travel", name: "City, Travel & Temporary Love", count: 7 },
-  { id: "power-elite", name: "Power, Identity & Elite Lives", count: 9 }
+  { id: "everyday-chemistry", name: "Everyday Chemistry", count: 2 },
+  { id: "slow-emotional", name: "Slow & Emotional", count: 4 },
+  { id: "city-travel", name: "City Travel & Temporary Love", count: 2 },
+  { id: "forbidden-risky", name: "Forbidden & Risky Desire", count: 7 },
+  { id: "midnight-confession", name: "Midnight & Confession", count: 1 },
+  { id: "power-elite", name: "Power Identity & Elite Lives", count: 1 }
 ];
 
 export default function Categories() {

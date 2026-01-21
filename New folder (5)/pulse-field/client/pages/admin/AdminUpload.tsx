@@ -6,16 +6,16 @@ export default function AdminUpload() {
     title: '',
     author: '',
     description: '',
-    category: 'slow-emotional'
+    category: 'everyday-chemistry'
   });
 
   const categorySubcategories = {
-    'slow-emotional': ['Slow Burn Romance', 'Emotional Journey', 'Deep Connection', 'Heartfelt Stories'],
-    'forbidden-risky': ['Forbidden Love', 'Risky Affairs', 'Secret Romance', 'Dangerous Attraction'],
-    'midnight-confession': ['Midnight Tales', 'Confession Stories', 'Late Night Romance', 'Secret Admissions'],
-    'everyday-chemistry': ['Daily Life Romance', 'Chemistry Stories', 'Ordinary Love', 'Simple Moments'],
-    'city-travel': ['City Romance', 'Travel Stories', 'Temporary Love', 'Urban Tales'],
-    'power-elite': ['Power Dynamics', 'Elite Lives', 'Identity Stories', 'High Society']
+    'everyday-chemistry': ['Office Chemistry', 'Unspoken Desire'],
+    'slow-emotional': ['One Last Goodbye', 'Slow Burn Romance', 'Second Chance Love', 'Slow Burn Romance/Age Gap Romance'],
+    'city-travel': ['City Love Story', 'Travel & Temporary Love'],
+    'forbidden-risky': ['Age Gap Romance', 'Mind Games & Attraction', 'Secret Affair', 'Artistic Souls', 'Therapist–Client Tension', 'Rivalry', 'Identity & Desire'],
+    'midnight-confession': ['Midnight Encounters'],
+    'power-elite': ['Royal & Elite Lives']
   };
 
   const handleCategoryChange = (newCategory: string) => {
@@ -140,12 +140,12 @@ export default function AdminUpload() {
               value={formData.category}
               onChange={(e) => handleCategoryChange(e.target.value)}
             >
-              <option value="slow-emotional">Slow & Emotional Romance</option>
-              <option value="forbidden-risky">Forbidden & Risky Desire</option>
-              <option value="midnight-confession">Midnight & Confession Stories</option>
               <option value="everyday-chemistry">Everyday Chemistry</option>
-              <option value="city-travel">City, Travel & Temporary Love</option>
-              <option value="power-elite">Power, Identity & Elite Lives</option>
+              <option value="slow-emotional">Slow & Emotional</option>
+              <option value="city-travel">City Travel & Temporary Love</option>
+              <option value="forbidden-risky">Forbidden & Risky Desire</option>
+              <option value="midnight-confession">Midnight & Confession</option>
+              <option value="power-elite">Power Identity & Elite Lives</option>
             </select>
           </div>
 

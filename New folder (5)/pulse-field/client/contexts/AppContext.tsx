@@ -36,18 +36,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const response = await fetch(`${API_BASE}/stories`);
         if (response.ok) {
           const data = await response.json();
-          const formattedStories: Story[] = data.map((story: any) => ({
+          const formattedStories: Story[] = data.map((story: any, index: number) => ({
             id: story.id,
             categoryId: story.category || "cat-1",
             title: story.title,
             author: story.author,
             description: story.description,
-            coverImage: story.thumbnail || "/assets/portrait/1p.jpg",
+            coverImage: story.thumbnail ? `http://localhost:5001${story.thumbnail}` : "/assets/portrait/1p.jpg",
             rating: story.rating || 4.5,
             reviewCount: story.reviewCount || 100,
             totalChapters: story.totalChapters,
             genre: story.category || "Romance",
-            isTrending: false,
+            isTrending: index < 3, // Make first 3 stories trending
             createdAt: story.createdAt
           }));
           setStories(formattedStories);

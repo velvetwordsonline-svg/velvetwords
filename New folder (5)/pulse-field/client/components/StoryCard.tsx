@@ -62,27 +62,9 @@ export default function StoryCard({
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
 
-          {/* Badges */}
-          <div className="absolute top-3 left-3 right-3 flex gap-2">
-            {isTrending && (
-              <span className="px-3 py-1 bg-primary/90 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                <Zap className="w-3 h-3" />
-                Trending
-              </span>
-            )}
-            <span className="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full ml-auto">
-              {genre}
-            </span>
-          </div>
+          {/* Badges - Removed */}
 
-          {/* Content Overlay */}
-          <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 flex items-center justify-center ${
-            isHovered ? "opacity-100" : "opacity-0"
-          }`}>
-            <button className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">
-              Read Now
-            </button>
-          </div>
+          {/* Content Overlay - Removed */}
         </div>
 
         {/* Text Content */}

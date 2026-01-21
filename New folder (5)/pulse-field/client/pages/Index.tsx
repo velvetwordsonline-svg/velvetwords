@@ -157,6 +157,8 @@ export default function Index() {
     : filteredCharacters.slice(0, 4);
 
   const trendingStories = stories.filter((s) => s.isTrending).slice(0, 12);
+  // Fallback to all stories if no trending stories
+  const displayTrendingStories = trendingStories.length > 0 ? trendingStories : stories.slice(0, 12);
   const newArrivals = stories.slice(0, 12).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const spotlightItems = stories.slice(0, 3).map((story) => ({
     id: story.id,
@@ -195,7 +197,7 @@ export default function Index() {
           title="Trending Stories"
           className="bg-gradient-to-b from-transparent via-primary/10 to-transparent"
         >
-          {trendingStories.map((story) => (
+          {displayTrendingStories.map((story) => (
             <div key={story.id} className="flex-shrink-0 w-36 sm:w-40 lg:w-48">
               <StoryCard
                 id={story.id}

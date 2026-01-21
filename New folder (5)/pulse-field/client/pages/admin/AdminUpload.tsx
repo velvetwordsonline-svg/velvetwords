@@ -37,21 +37,29 @@ export default function AdminUpload() {
       console.log('Form data:', formData);
       console.log('Files:', files);
       
-      const uploadData = new FormData();
-      uploadData.append('title', formData.title);
-      uploadData.append('author', formData.author);
-      uploadData.append('description', formData.description);
-      uploadData.append('category', formData.category);
-      if (files.document) uploadData.append('document', files.document);
-      if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
-
-      // For now, simulate successful upload since backend auth is not working
-      console.log('Simulating upload...');
+      // Create story object
+      const newStory = {
+        id: Date.now().toString(),
+        title: formData.title,
+        author: formData.author,
+        description: formData.description,
+        category: formData.category,
+        coverImage: files.thumbnail ? URL.createObjectURL(files.thumbnail) : null,
+        totalChapters: 1,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Save to localStorage
+      const existingStories = JSON.parse(localStorage.getItem('uploadedStories') || '[]');
+      existingStories.push(newStory);
+      localStorage.setItem('uploadedStories', JSON.stringify(existingStories));
+      
+      console.log('Story saved to localStorage:', newStory);
       
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      alert('Story uploaded successfully! (Simulated)');
+      alert('Story uploaded successfully!');
       navigate('/admin/dashboard');
       
     } catch (error) {

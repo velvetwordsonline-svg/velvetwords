@@ -16,6 +16,8 @@ import PaymentPolicy from "./pages/PaymentPolicy";
 import StoryDetail from "./pages/StoryDetail";
 import Reader from "./pages/Reader";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,9 @@ export default function App() {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/content-disclaimer" element={<ContentDisclaimer />} />
               <Route path="/payment-policy" element={<PaymentPolicy />} />
+              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

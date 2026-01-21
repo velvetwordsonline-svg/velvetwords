@@ -45,41 +45,26 @@ export default function AdminUpload() {
       if (files.document) uploadData.append('document', files.document);
       if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
 
-      // Try multiple backend URLs
-      const backendUrls = [
-        'https://www.velvetwords.online/api/admin/upload-story',
-        'http://localhost:5001/api/admin/upload-story'
-      ];
+      const token = localStorage.getItem('adminToken');
+      console.log('Using token:', token);
       
-      let response;
-      let success = false;
+      const response = await fetch('https://www.velvetwords.online/api/admin/upload-story', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`
+        },
+        body: uploadData
+      });
       
-      for (const url of backendUrls) {
-        try {
-          console.log('Trying backend URL:', url);
-          response = await fetch(url, {
-            method: 'POST',
-            headers: { 
-              'Authorization': `Bearer admin-token-${Date.now()}` // Use a proper token
-            },
-            body: uploadData
-          });
-          
-          if (response.ok) {
-            success = true;
-            break;
-          }
-        } catch (err) {
-          console.log('Failed with URL:', url, err);
-          continue;
-        }
-      }
-
-      if (success) {
+      console.log('Response status:', response.status);
+      
+      if (response.ok) {
         alert('Story uploaded successfully to database!');
         navigate('/admin/dashboard');
       } else {
-        throw new Error('All backend URLs failed');
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        alert(`Upload failed: ${errorText}`);
       }
       
     } catch (error) {

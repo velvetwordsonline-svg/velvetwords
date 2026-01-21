@@ -225,12 +225,21 @@ router.get('/chapters/:id', checkSubscriptionAccess, async (req, res) => {
 router.get('/trending', async (req, res) => {
   try {
     const { lang = 'en' } = req.query;
-    const stories = await Story.find({ 
+    
+    // First try to get stories marked as trending
+    let stories = await Story.find({ 
       status: 'published',
       isTrending: true 
     })
     .sort({ trendingOrder: 1, createdAt: -1 })
     .limit(12);
+
+    // If no trending stories, get latest published stories
+    if (stories.length === 0) {
+      stories = await Story.find({ status: 'published' })
+        .sort({ createdAt: -1 })
+        .limit(12);
+    }
 
     const formatted = stories.map(story => ({
       _id: story._id,
@@ -239,9 +248,9 @@ router.get('/trending', async (req, res) => {
       thumbnail: story.thumbnail,
       category: story.category,
       totalChapters: story.totalChapters,
-      rating: story.rating,
-      reviewCount: story.reviewCount,
-      isTrending: true
+      rating: story.rating || 4.5,
+      reviewCount: story.reviewCount || 0,
+      isTrending: story.isTrending || false
     }));
 
     res.json({ data: formatted });

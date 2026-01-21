@@ -8,6 +8,19 @@ const userSchema = new mongoose.Schema({
     unique: true,
     match: /^[6-9]\d{9}$/ // Indian phone number format
   },
+  isVerified: { type: Boolean, default: true },
+  subscription: {
+    plan: { type: String, enum: ['none', 'daily', 'weekly', 'monthly'], default: 'none' },
+    expiresAt: Date,
+    isActive: { type: Boolean, default: false }
+  },
+  readingHistory: [{
+    storyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Story' },
+    lastChapterRead: Number,
+    lastReadPosition: Number,
+    progressPercentage: Number,
+    lastReadAt: { type: Date, default: Date.now }
+  }],
   createdAt: { type: Date, default: Date.now },
   lastLoginAt: { type: Date, default: Date.now }
 });
@@ -40,7 +53,19 @@ const subscriptionSchema = new mongoose.Schema({
 subscriptionSchema.index({ phoneNumber: 1, isActive: 1 });
 subscriptionSchema.index({ expiryDate: 1 });
 
-module.exports = {
-  User: mongoose.models.User || mongoose.model('User', userSchema),
-  Subscription: mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema)
-};
+// Export models with proper checking
+let User, Subscription;
+
+try {
+  User = mongoose.model('User');
+} catch (error) {
+  User = mongoose.model('User', userSchema);
+}
+
+try {
+  Subscription = mongoose.model('Subscription');
+} catch (error) {
+  Subscription = mongoose.model('Subscription', subscriptionSchema);
+}
+
+module.exports = { User, Subscription };

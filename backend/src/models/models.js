@@ -49,27 +49,8 @@ const adminSchema = new mongoose.Schema({
   email: String
 }, { timestamps: true });
 
-// User Model
-const userSchema = new mongoose.Schema({
-  phone: { type: String, required: true, unique: true },
-  isVerified: { type: Boolean, default: true },
-  subscription: {
-    plan: { type: String, enum: ['none', 'daily', 'weekly', 'monthly'], default: 'none' },
-    expiresAt: Date,
-    isActive: { type: Boolean, default: false }
-  },
-  readingHistory: [{
-    storyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Story' },
-    lastChapterRead: Number,
-    lastReadPosition: Number,
-    progressPercentage: Number,
-    lastReadAt: { type: Date, default: Date.now }
-  }]
-}, { timestamps: true });
-
 module.exports = {
   Story: mongoose.models.Story || mongoose.model('Story', storySchema),
   Chapter: mongoose.models.Chapter || mongoose.model('Chapter', chapterSchema),
-  Admin: mongoose.models.Admin || mongoose.model('Admin', adminSchema),
-  User: mongoose.models.User || mongoose.model('User', userSchema)
+  Admin: mongoose.models.Admin || mongoose.model('Admin', adminSchema)
 };

@@ -1,5 +1,5 @@
 const express = require('express');
-const { User } = require('../models/models');
+const { User } = require('../models/authModels');
 const router = express.Router();
 
 // Phone number login/register
@@ -12,12 +12,12 @@ router.post('/auth/phone', async (req, res) => {
     }
 
     // Check if user exists
-    let user = await User.findOne({ phone });
+    let user = await User.findOne({ phoneNumber: phone });
     
     if (!user) {
       // Create new user
       user = new User({
-        phone,
+        phoneNumber: phone,
         isVerified: true,
         subscription: {
           plan: 'none',
@@ -41,7 +41,7 @@ router.post('/auth/phone', async (req, res) => {
       success: true,
       user: {
         id: user._id,
-        phone: user.phone,
+        phone: user.phoneNumber,
         isVerified: user.isVerified,
         subscription: user.subscription,
         readingHistory: user.readingHistory
@@ -62,7 +62,7 @@ router.post('/subscription/subscribe', async (req, res) => {
       return res.status(400).json({ error: 'Phone and plan required' });
     }
 
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ phoneNumber: phone });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -94,7 +94,7 @@ router.post('/reading/progress', async (req, res) => {
   try {
     const { phone, storyId, chapterNumber, position, percentage } = req.body;
     
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ phoneNumber: phone });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -130,14 +130,14 @@ router.get('/user/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
     
-    const user = await User.findOne({ phone }).populate('readingHistory.storyId');
+    const user = await User.findOne({ phoneNumber: phone }).populate('readingHistory.storyId');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
       id: user._id,
-      phone: user.phone,
+      phone: user.phoneNumber,
       isVerified: user.isVerified,
       subscription: user.subscription,
       readingHistory: user.readingHistory
@@ -163,7 +163,7 @@ router.post('/access/chapter', async (req, res) => {
       return res.json({ hasAccess: true, reason: 'premium_access' });
     }
 
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ phoneNumber: phone });
     if (!user) {
       return res.json({ hasAccess: false, reason: 'user_not_found' });
     }

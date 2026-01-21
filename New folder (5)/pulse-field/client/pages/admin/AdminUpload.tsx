@@ -15,18 +15,18 @@ export default function AdminUpload() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    const uploadData = new FormData();
-    uploadData.append('title', formData.title);
-    uploadData.append('author', formData.author);
-    uploadData.append('description', formData.description);
-    uploadData.append('category', formData.category);
-    if (files.document) uploadData.append('document', files.document);
-    if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
-
+    
     try {
+      const uploadData = new FormData();
+      uploadData.append('title', formData.title);
+      uploadData.append('author', formData.author);
+      uploadData.append('description', formData.description);
+      uploadData.append('category', formData.category);
+      if (files.document) uploadData.append('document', files.document);
+      if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
+
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/admin/upload-story', {
+      const response = await fetch('https://velvetwords-backend.vercel.app/api/admin/upload-story', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: uploadData

@@ -1,24 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ stories: 0, users: 0 });
-  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
+    const userData = localStorage.getItem('adminUser');
+    if (userData) {
+      setUser(JSON.parse(userData));
     }
-    
     fetchStats();
   }, []);
 
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/admin/stats', {
+      const response = await fetch('https://velvetwords-backend.vercel.app/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -30,9 +27,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem('adminToken');
-    navigate('/admin/login');
+    localStorage.removeItem('adminUser');
+    window.location.href = '/admin/login';
   };
 
   return (
@@ -41,17 +39,18 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+              <h1 className="text-xl font-semibold">Velvet Words Admin</h1>
+              {user && <span className="ml-4 text-gray-600">Welcome, {user.username}</span>}
             </div>
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate('/admin/upload')}
+              <a
+                href="/admin/upload"
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Upload Story
-              </button>
+              </a>
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
                 Logout

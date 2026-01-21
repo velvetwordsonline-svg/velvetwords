@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://velvetwords-backend.vercel.app/api/$1"
+      "destination": "https://velvetwords-backend.vercel.app/$1"
     },
     {
       "source": "/(.*)",

@@ -24,12 +24,12 @@ const queryClient = new QueryClient();
 
 export default function App() {
   return (
-    <AppProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <BrowserRouter>
+      <AppProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/library" element={<Library />} />
@@ -50,9 +50,9 @@ export default function App() {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </AppProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </AppProvider>
+    </BrowserRouter>
   );
 }

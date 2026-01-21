@@ -4,14 +4,18 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build:client",
   "outputDirectory": "dist/spa",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/admin/(.*)",
-      "dest": "https://admin-three-zeta-82.vercel.app/$1"
+      "source": "/admin",
+      "destination": "https://admin-three-zeta-82.vercel.app"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "https://velvetwords-backend.vercel.app/api/$1"
+      "source": "/admin/(.*)",
+      "destination": "https://admin-three-zeta-82.vercel.app/$1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://velvetwords-backend.vercel.app/api/$1"
     }
   ]
 }

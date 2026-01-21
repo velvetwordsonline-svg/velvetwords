@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 export default function AdminLogin() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
     try {
       const response = await fetch('/api/admin/login', {
@@ -17,13 +19,17 @@ export default function AdminLogin() {
         body: JSON.stringify(credentials)
       });
       
+      const data = await response.json();
+      
       if (response.ok) {
-        const data = await response.json();
         localStorage.setItem('adminToken', data.token);
         navigate('/admin/dashboard');
+      } else {
+        setError(data.error || 'Login failed');
       }
     } catch (error) {
       console.error('Login failed:', error);
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -38,10 +44,16 @@ export default function AdminLogin() {
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
           <div>
             <input
               type="text"
               required
+              autoComplete="username"
               className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Username"
               value={credentials.username}
@@ -52,6 +64,7 @@ export default function AdminLogin() {
             <input
               type="password"
               required
+              autoComplete="current-password"
               className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Password"
               value={credentials.password}

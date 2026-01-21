@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 export default function AdminUpload() {
   const [formData, setFormData] = useState({
     title: '',
-    author: '',
+    author: 'Office Chemistry', // Initialize with first subcategory
     description: '',
     category: 'everyday-chemistry'
   });
@@ -34,6 +34,9 @@ export default function AdminUpload() {
     setLoading(true);
     
     try {
+      console.log('Form data:', formData);
+      console.log('Files:', files);
+      
       const uploadData = new FormData();
       uploadData.append('title', formData.title);
       uploadData.append('author', formData.author);
@@ -43,21 +46,27 @@ export default function AdminUpload() {
       if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
 
       const token = localStorage.getItem('adminToken');
+      console.log('Token:', token);
+      
       const response = await fetch('https://velvetwords-backend.vercel.app/api/admin/upload-story', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: uploadData
       });
 
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response:', responseText);
+
       if (response.ok) {
         alert('Story uploaded successfully!');
         navigate('/admin/dashboard');
       } else {
-        alert('Upload failed');
+        alert(`Upload failed: ${responseText}`);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Upload failed');
+      alert(`Upload failed: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -110,7 +119,7 @@ export default function AdminUpload() {
               value={formData.author}
               onChange={(e) => setFormData({...formData, author: e.target.value})}
             >
-              {categorySubcategories[formData.category as keyof typeof categorySubcategories].map((subcategory) => (
+              {categorySubcategories[formData.category as keyof typeof categorySubcategories]?.map((subcategory) => (
                 <option key={subcategory} value={subcategory}>
                   {subcategory}
                 </option>

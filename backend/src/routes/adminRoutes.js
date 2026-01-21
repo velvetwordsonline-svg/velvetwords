@@ -2,12 +2,25 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const { Story, Chapter } = require('../models/models');
+const { Story, Chapter, User } = require('../models/models');
 const docxParser = require('../services/docxParser');
 const translator = require('../services/translator');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// Get admin stats
+router.get('/stats', authMiddleware, async (req, res) => {
+  try {
+    const [storiesCount, usersCount] = await Promise.all([
+      Story.countDocuments(),
+      User.countDocuments()
+    ]);
+    res.json({ stories: storiesCount, users: usersCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Multer configuration - FIXED PATHS
 const storage = multer.diskStorage({

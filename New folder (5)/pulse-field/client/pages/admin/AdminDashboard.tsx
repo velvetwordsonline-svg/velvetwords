@@ -34,24 +34,27 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow">
+    <div className="min-h-screen bg-black">
+      {/* Gradient divider line */}
+      <div className="h-[1px] bg-gradient-to-r from-transparent via-purple-600 to-transparent opacity-50" />
+      
+      <nav className="bg-[#050505] shadow border-b border-purple-600/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold">Velvet Words Admin</h1>
-              {user && <span className="ml-4 text-gray-600">Welcome, {user.username}</span>}
+              <h1 className="text-xl font-semibold text-white">Velvet Words Admin</h1>
+              {user && <span className="ml-4 text-gray-300">Welcome, {user.username}</span>}
             </div>
             <div className="flex items-center space-x-4">
               <a
                 href="/admin/upload"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-all shadow-[0_0_15px_rgba(124,58,237,0.4)]"
               >
                 Upload Story
               </a>
               <button
                 onClick={logout}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                className="bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-all"
               >
                 Logout
               </button>
@@ -62,20 +65,20 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-[#050505] overflow-hidden shadow-[0_0_15px_rgba(124,58,237,0.3)] rounded-xl border border-purple-600">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold">S</span>
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
+                    <dt className="text-sm font-medium text-gray-400 truncate">
                       Total Stories
                     </dt>
-                    <dd className="text-lg font-medium text-gray-900">
+                    <dd className="text-lg font-medium text-white">
                       {stats.stories}
                     </dd>
                   </dl>
@@ -84,20 +87,20 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-[#050505] overflow-hidden shadow-[0_0_15px_rgba(124,58,237,0.3)] rounded-xl border border-purple-600">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold">U</span>
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
+                    <dt className="text-sm font-medium text-gray-400 truncate">
                       Total Users
                     </dt>
-                    <dd className="text-lg font-medium text-gray-900">
+                    <dd className="text-lg font-medium text-white">
                       {stats.users}
                     </dd>
                   </dl>

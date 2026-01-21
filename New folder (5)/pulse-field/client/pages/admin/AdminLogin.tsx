@@ -14,7 +14,7 @@ export default function AdminLogin() {
     
     try {
       // Try to authenticate with backend first
-      const response = await fetch('https://velvetwords-backend.vercel.app/api/admin/login', {
+      const response = await fetch('https://www.velvetwords.online/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

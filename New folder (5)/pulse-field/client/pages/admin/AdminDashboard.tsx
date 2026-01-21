@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('https://velvetwords-backend.vercel.app/api/admin/stats', {
+      const response = await fetch('https://www.velvetwords.online/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {

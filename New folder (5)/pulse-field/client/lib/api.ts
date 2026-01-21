@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-const API_BASE = 'https://velvetwords-backend.vercel.app/api';
-const IMAGE_BASE = 'https://velvetwords-backend.vercel.app';
+const API_BASE = 'https://www.velvetwords.online/api';
+const IMAGE_BASE = 'https://www.velvetwords.online';
 
 export async function getStoriesByCategory(category: string | null = null, lang: string = 'en') {
   const params: any = { lang };
   if (category) params.category = category;
   
   const { data } = await axios.get(`${API_BASE}/stories`, { params });
-  // Fix thumbnail URLs
   return data.map((story: any) => ({
     ...story,
     coverImage: story.thumbnail ? `${IMAGE_BASE}${story.thumbnail}` : story.coverImage

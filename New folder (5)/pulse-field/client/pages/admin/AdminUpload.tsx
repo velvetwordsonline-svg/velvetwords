@@ -47,7 +47,7 @@ export default function AdminUpload() {
 
       // Try multiple backend URLs
       const backendUrls = [
-        'https://velvetwords-backend.vercel.app/api/admin/upload-story',
+        'https://www.velvetwords.online/api/admin/upload-story',
         'http://localhost:5001/api/admin/upload-story'
       ];
       

@@ -29,10 +29,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [chapters, setChapters] = useState<{ [key: string]: Chapter[] }>({});
   const [loading, setLoading] = useState(true);
 
-  // Fetch stories from backend
+  // Fetch stories from localStorage first, then backend as fallback
   useEffect(() => {
     const fetchStories = async () => {
       try {
+        // First try localStorage
+        const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
+        
+        if (localStories.length > 0) {
+          const formattedStories: Story[] = localStories.map((story: any, index: number) => ({
+            id: story.id,
+            categoryId: story.category || "cat-1",
+            title: story.title,
+            author: story.author,
+            description: story.description,
+            coverImage: story.coverImage || "/assets/portrait/1p.jpg",
+            rating: story.rating || 4.5,
+            reviewCount: story.reviewCount || 100,
+            totalChapters: story.totalChapters || 1,
+            genre: story.category || "Romance",
+            isTrending: index < 3,
+            createdAt: story.createdAt || new Date().toISOString()
+          }));
+          setStories(formattedStories);
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback to backend if no local stories
         const response = await fetch(`${API_BASE}/stories`);
         if (response.ok) {
           const data = await response.json();
@@ -47,7 +71,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             reviewCount: story.reviewCount || 100,
             totalChapters: story.totalChapters,
             genre: story.category || "Romance",
-            isTrending: index < 3, // Make first 3 stories trending
+            isTrending: index < 3,
             createdAt: story.createdAt
           }));
           setStories(formattedStories);
@@ -60,6 +84,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
 
     fetchStories();
+    
+    // Listen for localStorage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'stories') {
+        console.log('Stories updated in AppContext, reloading...');
+        fetchStories();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // Load user from localStorage on mount

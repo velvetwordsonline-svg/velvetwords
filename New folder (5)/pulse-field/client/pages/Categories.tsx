@@ -28,21 +28,27 @@ export default function Categories() {
 
   // Listen for localStorage changes (when new stories are uploaded)
   useEffect(() => {
-    const handleStorageChange = () => {
-      console.log('localStorage changed, reloading stories');
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'stories') {
+        console.log('Stories updated, reloading...');
+        loadStories();
+      }
+    };
+    
+    // Listen for storage events from other tabs/components
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom storage events from same tab
+    const handleCustomStorage = () => {
+      console.log('Custom storage event detected, reloading stories');
       loadStories();
     };
     
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also check for changes every 2 seconds as fallback
-    const interval = setInterval(() => {
-      loadStories();
-    }, 2000);
+    window.addEventListener('storageUpdate', handleCustomStorage);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('storageUpdate', handleCustomStorage);
     };
   }, [activeCategory, language]);
 

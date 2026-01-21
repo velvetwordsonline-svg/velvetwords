@@ -55,10 +55,16 @@ export default function AdminUpload() {
       existingStories.push(newStory);
       localStorage.setItem('stories', JSON.stringify(existingStories));
       
+      // Trigger storage event for other tabs/components
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'stories',
+        newValue: JSON.stringify(existingStories)
+      }));
+      
       console.log('Story saved to localStorage:', newStory);
       
       alert('Story uploaded successfully!');
-      navigate('/admin/dashboard');
+      navigate('/categories'); // Redirect to categories to see the story
       
     } catch (error) {
       console.error('Upload error:', error);

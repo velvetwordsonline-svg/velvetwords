@@ -50,9 +50,6 @@ export default function AdminUpload() {
       
       const response = await fetch('https://www.velvetwords.online/api/admin/upload-story', {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        },
         body: uploadData
       });
       

@@ -1,32 +1,18 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5001/api';
-const IMAGE_BASE = 'http://localhost:5001';
+const API_BASE = 'https://velvetwords-backend.vercel.app/api';
+const IMAGE_BASE = 'https://velvetwords-backend.vercel.app';
 
 export async function getStoriesByCategory(category: string | null = null, lang: string = 'en') {
-  try {
-    const params: any = { lang };
-    if (category) params.category = category;
-    
-    const { data } = await axios.get(`${API_BASE}/stories`, { params });
-    // Fix thumbnail URLs
-    return data.map((story: any) => ({
-      ...story,
-      coverImage: story.thumbnail ? `${IMAGE_BASE}${story.thumbnail}` : story.coverImage
-    }));
-  } catch (error) {
-    console.log('Backend not available, using localStorage fallback');
-    // Fallback to localStorage
-    const uploadedStories = JSON.parse(localStorage.getItem('uploadedStories') || '[]');
-    
-    // Filter by category if specified
-    let filteredStories = uploadedStories;
-    if (category) {
-      filteredStories = uploadedStories.filter((story: any) => story.category === category);
-    }
-    
-    return filteredStories;
-  }
+  const params: any = { lang };
+  if (category) params.category = category;
+  
+  const { data } = await axios.get(`${API_BASE}/stories`, { params });
+  // Fix thumbnail URLs
+  return data.map((story: any) => ({
+    ...story,
+    coverImage: story.thumbnail ? `${IMAGE_BASE}${story.thumbnail}` : story.coverImage
+  }));
 }
 
 export async function getStory(id: string, lang: string = 'en') {

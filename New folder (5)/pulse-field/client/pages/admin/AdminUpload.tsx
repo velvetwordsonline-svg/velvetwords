@@ -37,30 +37,50 @@ export default function AdminUpload() {
       console.log('Form data:', formData);
       console.log('Files:', files);
       
-      // Create story object
-      const newStory = {
-        id: Date.now().toString(),
-        title: formData.title,
-        author: formData.author,
-        description: formData.description,
-        category: formData.category,
-        coverImage: files.thumbnail ? URL.createObjectURL(files.thumbnail) : null,
-        totalChapters: 1,
-        createdAt: new Date().toISOString()
-      };
+      const uploadData = new FormData();
+      uploadData.append('title', formData.title);
+      uploadData.append('author', formData.author);
+      uploadData.append('description', formData.description);
+      uploadData.append('category', formData.category);
+      if (files.document) uploadData.append('document', files.document);
+      if (files.thumbnail) uploadData.append('thumbnail', files.thumbnail);
+
+      // Try multiple backend URLs
+      const backendUrls = [
+        'https://velvetwords-backend.vercel.app/api/admin/upload-story',
+        'http://localhost:5001/api/admin/upload-story'
+      ];
       
-      // Save to localStorage
-      const existingStories = JSON.parse(localStorage.getItem('uploadedStories') || '[]');
-      existingStories.push(newStory);
-      localStorage.setItem('uploadedStories', JSON.stringify(existingStories));
+      let response;
+      let success = false;
       
-      console.log('Story saved to localStorage:', newStory);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert('Story uploaded successfully!');
-      navigate('/admin/dashboard');
+      for (const url of backendUrls) {
+        try {
+          console.log('Trying backend URL:', url);
+          response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Authorization': `Bearer admin-token-${Date.now()}` // Use a proper token
+            },
+            body: uploadData
+          });
+          
+          if (response.ok) {
+            success = true;
+            break;
+          }
+        } catch (err) {
+          console.log('Failed with URL:', url, err);
+          continue;
+        }
+      }
+
+      if (success) {
+        alert('Story uploaded successfully to database!');
+        navigate('/admin/dashboard');
+      } else {
+        throw new Error('All backend URLs failed');
+      }
       
     } catch (error) {
       console.error('Upload error:', error);

@@ -13,26 +13,53 @@ export default function AdminLogin() {
     setError('');
     
     try {
-      // Simple hardcoded check for now
+      // Try to authenticate with backend first
+      const response = await fetch('https://velvetwords-backend.vercel.app/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminUser', JSON.stringify(data.admin));
+        navigate('/admin/dashboard');
+      } else {
+        // Fallback to hardcoded check
+        if (credentials.username === 'admin' && credentials.password === 'admin123') {
+          const adminData = {
+            id: '1',
+            username: 'admin',
+            email: 'admin@velvetwords.com'
+          };
+          
+          localStorage.setItem('adminToken', 'admin-token-' + Date.now());
+          localStorage.setItem('adminUser', JSON.stringify(adminData));
+          navigate('/admin/dashboard');
+        } else {
+          setError('Invalid credentials. Use admin/admin123');
+        }
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      // Fallback to hardcoded check
       if (credentials.username === 'admin' && credentials.password === 'admin123') {
-        // Create fake admin data
         const adminData = {
           id: '1',
           username: 'admin',
           email: 'admin@velvetwords.com'
         };
         
-        localStorage.setItem('adminToken', 'fake-token-' + Date.now());
+        localStorage.setItem('adminToken', 'admin-token-' + Date.now());
         localStorage.setItem('adminUser', JSON.stringify(adminData));
-        
-        console.log('Login successful, redirecting...');
         navigate('/admin/dashboard');
       } else {
-        setError('Invalid credentials. Use admin/admin123');
+        setError('Login failed. Please try again.');
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

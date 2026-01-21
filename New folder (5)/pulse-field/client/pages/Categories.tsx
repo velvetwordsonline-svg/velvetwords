@@ -26,10 +26,32 @@ export default function Categories() {
     loadStories();
   }, [activeCategory, language]);
 
+  // Listen for localStorage changes (when new stories are uploaded)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('localStorage changed, reloading stories');
+      loadStories();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check for changes every 2 seconds as fallback
+    const interval = setInterval(() => {
+      loadStories();
+    }, 2000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [activeCategory, language]);
+
   const loadStories = async () => {
     setLoading(true);
     try {
+      console.log('Loading stories for category:', activeCategory);
       const data = await getStoriesByCategory(activeCategory, language);
+      console.log('Loaded stories:', data);
       setStories(data);
     } catch (error) {
       console.error('Failed to load stories:', error);
@@ -60,7 +82,7 @@ export default function Categories() {
         <div className="max-w-[1300px] mx-auto">
           
           {/* Category Filter Dropdown */}
-          <div className="flex justify-center mb-16">
+          <div className="flex justify-center mb-16 gap-4">
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -106,6 +128,15 @@ export default function Categories() {
                 </div>
               )}
             </div>
+            
+            {/* Refresh Button */}
+            <button
+              onClick={loadStories}
+              className="px-4 py-3 rounded-full border border-purple-600 text-purple-400 hover:bg-purple-600/20 transition-colors"
+              title="Refresh Stories"
+            >
+              🔄
+            </button>
           </div>
 
           {/* Loading State */}

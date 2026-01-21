@@ -7,11 +7,11 @@
   "routes": [
     {
       "src": "/admin/(.*)",
-      "dest": "https://admin-alpha-blush-10.vercel.app/$1"
+      "dest": "https://admin-three-zeta-82.vercel.app/$1"
     },
     {
       "src": "/api/(.*)",
-      "dest": "https://velvetwords.vercel.app/api/$1"
+      "dest": "https://velvetwords-backend.vercel.app/api/$1"
     }
   ]
 }

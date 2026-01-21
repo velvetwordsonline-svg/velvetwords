@@ -5,6 +5,20 @@ const { Admin } = require('../models/models');
 
 const router = express.Router();
 
+// Test endpoint to check admin
+router.get('/test-admin', async (req, res) => {
+  try {
+    const admin = await Admin.findOne({ username: 'admin' });
+    res.json({ 
+      exists: !!admin, 
+      username: admin?.username,
+      hasPassword: !!admin?.password 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Register admin (run once to create admin account)
 router.post('/register', async (req, res) => {
   try {
@@ -32,14 +46,19 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
+    console.log('Login attempt:', req.body);
     const { username, password } = req.body;
     
     const admin = await Admin.findOne({ username });
+    console.log('Admin found:', !!admin);
+    
     if (!admin) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isValid = await bcrypt.compare(password, admin.password);
+    console.log('Password valid:', isValid);
+    
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -50,6 +69,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    console.log('Login successful for:', username);
     res.json({ 
       success: true, 
       token,
@@ -60,6 +80,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: error.message });
   }
 });

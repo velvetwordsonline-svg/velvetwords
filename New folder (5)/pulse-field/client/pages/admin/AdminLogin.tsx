@@ -57,10 +57,12 @@ export default function AdminLogin() {
           )}
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
               Username
             </label>
             <input
+              id="username"
+              name="username"
               type="text"
               required
               autoComplete="username"
@@ -72,10 +74,12 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
             <input
+              id="password"
+              name="password"
               type="password"
               required
               autoComplete="current-password"

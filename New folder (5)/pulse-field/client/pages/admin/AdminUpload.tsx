@@ -6,7 +6,7 @@ export default function AdminUpload() {
     title: '',
     author: '',
     description: '',
-    category: 'romance'
+    category: 'slow-emotional'
   });
   const [files, setFiles] = useState({ document: null, thumbnail: null });
   const [loading, setLoading] = useState(false);
@@ -115,11 +115,12 @@ export default function AdminUpload() {
               value={formData.category}
               onChange={(e) => setFormData({...formData, category: e.target.value})}
             >
-              <option value="romance">Romance</option>
-              <option value="thriller">Thriller</option>
-              <option value="mystery">Mystery</option>
-              <option value="fantasy">Fantasy</option>
-              <option value="drama">Drama</option>
+              <option value="slow-emotional">Slow & Emotional Romance</option>
+              <option value="forbidden-risky">Forbidden & Risky Desire</option>
+              <option value="midnight-confession">Midnight & Confession Stories</option>
+              <option value="everyday-chemistry">Everyday Chemistry</option>
+              <option value="city-travel">City, Travel & Temporary Love</option>
+              <option value="power-elite">Power, Identity & Elite Lives</option>
             </select>
           </div>
 

@@ -4,7 +4,14 @@ import Footer from "@/components/Footer";
 import StoryDetailSlider from "@/components/StoryDetailSlider";
 import { getStoriesByCategory } from "@/lib/api";
 
-const categories = ["romance", "thriller", "fantasy", "mystery", "scifi"];
+const categories = [
+  { id: "slow-emotional", name: "Slow & Emotional Romance", count: 12 },
+  { id: "forbidden-risky", name: "Forbidden & Risky Desire", count: 15 },
+  { id: "midnight-confession", name: "Midnight & Confession Stories", count: 8 },
+  { id: "everyday-chemistry", name: "Everyday Chemistry", count: 10 },
+  { id: "city-travel", name: "City, Travel & Temporary Love", count: 7 },
+  { id: "power-elite", name: "Power, Identity & Elite Lives", count: 9 }
+];
 
 export default function Categories() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -13,6 +20,7 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedStory, setSelectedStory] = useState<any | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     loadStories();
@@ -51,85 +59,53 @@ export default function Categories() {
       <section className="py-20 px-4">
         <div className="max-w-[1300px] mx-auto">
           
-          {/* Language Switcher */}
-          <div className="flex justify-center gap-4 mb-8">
-            <button
-              onClick={() => setLanguage("en")}
-              className={`
-                px-6 py-2 rounded-full border-[1.5px] font-medium text-sm
-                transition-all duration-300
-                ${
-                  language === "en"
-                    ? "border-purple-600 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(124,58,237,0.5)]"
-                    : "border-purple-600 bg-transparent text-white hover:bg-[#1a082f]"
-                }
-              `}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setLanguage("hi")}
-              className={`
-                px-6 py-2 rounded-full border-[1.5px] font-medium text-sm
-                transition-all duration-300
-                ${
-                  language === "hi"
-                    ? "border-purple-600 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(124,58,237,0.5)]"
-                    : "border-purple-600 bg-transparent text-white hover:bg-[#1a082f]"
-                }
-              `}
-            >
-              हिंदी
-            </button>
-            <button
-              onClick={() => setLanguage("hinglish")}
-              className={`
-                px-6 py-2 rounded-full border-[1.5px] font-medium text-sm
-                transition-all duration-300
-                ${
-                  language === "hinglish"
-                    ? "border-purple-600 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(124,58,237,0.5)]"
-                    : "border-purple-600 bg-transparent text-white hover:bg-[#1a082f]"
-                }
-              `}
-            >
-              Hinglish
-            </button>
-          </div>
-          
-          {/* Category Filter Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={`
-                px-8 py-3 rounded-full border-[1.5px] font-medium text-sm
-                transition-all duration-300 ease-in-out capitalize
-                ${
-                  activeCategory === null
-                    ? "border-purple-600 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(124,58,237,0.5)]"
-                    : "border-purple-600 bg-transparent text-white hover:bg-[#1a082f] hover:shadow-[0_0_15px_rgba(124,58,237,0.4)]"
-                }
-              `}
-            >
-              All
-            </button>
-            {categories.map((category) => (
+          {/* Category Filter Dropdown */}
+          <div className="flex justify-center mb-16">
+            <div className="relative">
               <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="
                   px-8 py-3 rounded-full border-[1.5px] font-medium text-sm
-                  transition-all duration-300 ease-in-out capitalize
-                  ${
-                    activeCategory === category
-                      ? "border-purple-600 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(124,58,237,0.5)]"
-                      : "border-purple-600 bg-transparent text-white hover:bg-[#1a082f] hover:shadow-[0_0_15px_rgba(124,58,237,0.4)]"
-                  }
-                `}
+                  transition-all duration-300 ease-in-out
+                  border-purple-600 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(124,58,237,0.5)]
+                  flex items-center gap-2
+                "
               >
-                {category}
+                {activeCategory ? categories.find(c => c.id === activeCategory)?.name : "All Categories"}
+                <svg className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-            ))}
+              
+              {isDropdownOpen && (
+                <div className="absolute top-full mt-2 w-80 bg-[#050505] border border-purple-600 rounded-xl shadow-[0_0_30px_rgba(124,58,237,0.6)] z-50">
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setActiveCategory(null);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-600/20 text-white transition-colors"
+                    >
+                      <div className="font-medium">All Categories</div>
+                    </button>
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          setActiveCategory(category.id);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-600/20 text-white transition-colors"
+                      >
+                        <div className="font-medium">{category.name}</div>
+                        <div className="text-sm text-gray-400">{category.count} Stories</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Loading State */}

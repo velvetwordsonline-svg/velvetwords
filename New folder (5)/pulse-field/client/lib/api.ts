@@ -1,4 +1,4 @@
-const API_BASE = 'https://www.velvetwords.online/backend';
+const API_BASE = 'https://www.velvetwords.online/backend/api';
 
 export async function getStoriesByCategory(category = null, lang = 'en') {
   try {

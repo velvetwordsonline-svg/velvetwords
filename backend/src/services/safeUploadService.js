@@ -68,22 +68,11 @@ class SafeUploadService {
       story.status = 'published';
       story.lastModified = new Date();
       
-      // Translate story metadata
-      try {
-        const [hiTitle, hinglishTitle, hiDesc, hinglishDesc] = await Promise.all([
-          translator.translateToHindi(storyData.title),
-          translator.translateToHinglish(storyData.title),
-          translator.translateToHindi(storyData.description),
-          translator.translateToHinglish(storyData.description)
-        ]);
-        
-        story.title.hi = hiTitle;
-        story.title.hinglish = hinglishTitle;
-        story.description.hi = hiDesc;
-        story.description.hinglish = hinglishDesc;
-      } catch (translationError) {
-        console.warn('⚠️ Translation failed, keeping English only:', translationError.message);
-      }
+      // Simplified - skip translation for now
+      story.title.hi = storyData.title;
+      story.title.hinglish = storyData.title;
+      story.description.hi = storyData.description;
+      story.description.hinglish = storyData.description;
       
       await story.save({ session });
       

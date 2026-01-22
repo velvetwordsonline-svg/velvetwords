@@ -86,139 +86,112 @@ In that moment, standing in the shadows of the mansion, I chose to embrace the d
 export const categories: Category[] = [
   {
     id: "cat-1",
-    name: "Slow & Emotional Romance",
-    description: "Heartfelt stories that build slowly with deep emotional connections",
-    image: "/assets/landscape/College Romance.jpg",
+    name: "Everyday Chemistry",
+    description: "Real-life connections and chemistry in everyday situations",
+    image: "/assets/landscape/office romance.jpg",
     icon: "Heart",
-    storyCount: 12,
+    storyCount: 3,
   },
   {
     id: "cat-2",
+    name: "Slow & Emotional",
+    description: "Heartfelt stories that build slowly with deep emotional connections",
+    image: "/assets/landscape/College Romance.jpg",
+    icon: "Heart",
+    storyCount: 7,
+  },
+  {
+    id: "cat-3",
+    name: "City Travel & Temporary Love",
+    description: "Urban adventures and fleeting romances across the world",
+    image: "/assets/landscape/Bestie Romance.jpg",
+    icon: "Crown",
+    storyCount: 2,
+  },
+  {
+    id: "cat-4",
     name: "Forbidden & Risky Desire",
     description: "Dangerous attractions and relationships that break all the rules",
     image: "/assets/landscape/Dark Romance.png",
     icon: "Flame",
-    storyCount: 15,
-  },
-  {
-    id: "cat-3",
-    name: "Midnight & Confession Stories",
-    description: "Late-night revelations and secrets shared under the stars",
-    image: "/assets/landscape/Paranormal Love Stories.jpg",
-    icon: "Zap",
-    storyCount: 8,
-  },
-  {
-    id: "cat-4",
-    name: "Everyday Chemistry",
-    description: "Real-life connections and chemistry in everyday situations",
-    image: "/assets/landscape/Bestie Romance.jpg",
-    icon: "Heart",
-    storyCount: 10,
+    storyCount: 9,
   },
   {
     id: "cat-5",
-    name: "City, Travel & Temporary Love",
-    description: "Urban adventures and fleeting romances across the world",
-    image: "/assets/landscape/office romance.jpg",
-    icon: "Crown",
-    storyCount: 7,
+    name: "Midnight & Confession",
+    description: "Late-night revelations and secrets shared under the stars",
+    image: "/assets/landscape/Paranormal Love Stories.jpg",
+    icon: "Zap",
+    storyCount: 4,
   },
   {
     id: "cat-6",
-    name: "Power, Identity & Elite Lives",
+    name: "Power Identity & Elite Lives",
     description: "High society romances and power dynamics in elite circles",
     image: "/assets/landscape/fAMILY ROMANE .png",
     icon: "Crown",
-    storyCount: 9,
+    storyCount: 1,
   },
 ];
 
 const storyTitles = [
-  "Crimson Hearts",
-  "Midnight Desires",
-  "Forbidden Passion",
-  "Whispered Promises",
-  "Enchanted Nights",
-  "Dangerous Attraction",
-  "Obsidian Dreams",
-  "Velvet Confessions",
-  "Burning Temptation",
-  "Shadow of Desire",
-  "Starfire Romance",
-  "Wicked Seduction",
-  "Eternal Longing",
-  "Silk and Secrets",
-  "Moonlit Surrender",
-  "Blazing Connection",
-  "Hidden Depths",
-  "Passionate Echoes",
-  "Tangled Hearts",
-  "Beautiful Chaos",
-  "Untamed Love",
-  "Infinite Desire",
-  "Crimson Fate",
-  "Silver Lining",
-  "Dark Paradise",
-  "Fragile Devotion",
-  "Reckless Heart",
-  "Stolen Moments",
-  "Wildfire Romance",
-  "Tender Trap",
-  "Breathless Encounter",
-  "Sweet Surrender",
-  "Midnight Confession",
-  "Hidden Truth",
-  "Precious Chaos",
-  "Burning Bridges",
-  "Shattered Illusions",
-  "Passion Unbound",
-  "Eternal Flame",
-  "Twisted Fate",
-  "Undeniable Spark",
+  "Office Chemistry", // Everyday Chemistry
+  "Office Chemistry", // Everyday Chemistry  
+  "One Last Goodbye", // Everyday Chemistry
+  "Age Gap Romance", // Slow & Emotional
+  "City Love Story", // Slow & Emotional
+  "Mind Games & Attraction", // Slow & Emotional
+  "Secret Affair", // Slow & Emotional
+  "Artistic Souls", // Slow & Emotional
+  "Office Chemistry", // Slow & Emotional
+  "Unspoken Desire", // Slow & Emotional
+  "Slow Burn Romance", // Slow & Emotional
+  "Travel & Temporary Love", // City Travel & Temporary Love
+  "One Last Goodbye", // City Travel & Temporary Love
+  "Forbidden Desire", // Forbidden & Risky Desire
+  "Secret Affair", // Forbidden & Risky Desire
+  "Mind Games & Attraction", // Forbidden & Risky Desire
+  "Therapist–Client Tension", // Forbidden & Risky Desire
+  "Rivalry", // Forbidden & Risky Desire
+  "Identity & Desire", // Forbidden & Risky Desire
+  "Therapist–Client Tension", // Forbidden & Risky Desire
+  "Secret Affair", // Forbidden & Risky Desire
+  "Forbidden Attraction", // Forbidden & Risky Desire
+  "Midnight Encounters", // Midnight & Confession
+  "Second Chance Love", // Midnight & Confession
+  "Midnight Confessions", // Midnight & Confession
+  "Artistic Souls", // Midnight & Confession
+  "Royal & Elite Lives", // Power Identity & Elite Lives
 ];
 
-const authors = [
-  "Elena Sinclair",
-  "Victoria Blake",
-  "Jessica Summers",
-  "Sophie Chen",
-  "Aria Rose",
-  "Mina Harker",
-  "Luna Cross",
-  "Scarlett Night",
-  "Ivy Sterling",
-  "Rose Winters",
-  "Haven Winter",
-  "Sage Miranda",
-  "Raven Cross",
-  "Phoenix Lane",
-  "Storm Bailey",
-  "Sienna Blake",
-  "Aurora Knight",
-  "Destiny Hayes",
-  "Freya Anderson",
-  "Jade Montgomery",
-  "Kira Matthews",
-  "Leila Stone",
-  "Morgan Chase",
-  "Nova Quinn",
-  "Ophelia Ross",
-  "Piper Grant",
-  "Quinn Foster",
-  "Riley Stone",
-  "Sierra Miles",
-  "Tessa Brooks",
-  "Uma Patel",
-  "Violet Hayes",
-  "Whitney Stone",
-  "Xena Pierce",
-  "Yara Khan",
-  "Zoe Martin",
-  "Amber Cross",
-  "Brooklyn Hayes",
-  "Cassie Lane",
-  "Dakota Stone",
+const subCategories = [
+  "Office Chemistry", // Everyday Chemistry
+  "Office Chemistry", // Everyday Chemistry  
+  "One Last Goodbye", // Everyday Chemistry
+  "Age Gap Romance", // Slow & Emotional
+  "City Love Story", // Slow & Emotional
+  "Mind Games & Attraction", // Slow & Emotional
+  "Secret Affair", // Slow & Emotional
+  "Artistic Souls", // Slow & Emotional
+  "Office Chemistry", // Slow & Emotional
+  "Unspoken Desire", // Slow & Emotional
+  "Slow Burn Romance", // Slow & Emotional
+  "Travel & Temporary Love", // City Travel & Temporary Love
+  "One Last Goodbye", // City Travel & Temporary Love
+  "Forbidden Desire", // Forbidden & Risky Desire
+  "Secret Affair", // Forbidden & Risky Desire
+  "Mind Games & Attraction", // Forbidden & Risky Desire
+  "Therapist–Client Tension", // Forbidden & Risky Desire
+  "Rivalry", // Forbidden & Risky Desire
+  "Identity & Desire", // Forbidden & Risky Desire
+  "Therapist–Client Tension", // Forbidden & Risky Desire
+  "Secret Affair", // Forbidden & Risky Desire
+  "Forbidden Attraction", // Forbidden & Risky Desire
+  "Midnight Encounters", // Midnight & Confession
+  "Second Chance Love", // Midnight & Confession
+  "Midnight Confessions", // Midnight & Confession
+  "Artistic Souls", // Midnight & Confession
+  "Royal & Elite Lives", // Power Identity & Elite Lives
 ];
 
 // Generate cover image paths from assets/portrait folder
@@ -234,32 +207,38 @@ const chapterImages = [
 
 export const generateStories = (): Story[] => {
   const stories: Story[] = [];
-  let storyIndex = 0;
+  const categoryMapping = [
+    { categoryId: "cat-1", count: 3, startIndex: 0 }, // Everyday Chemistry
+    { categoryId: "cat-2", count: 7, startIndex: 3 }, // Slow & Emotional
+    { categoryId: "cat-3", count: 2, startIndex: 10 }, // City Travel & Temporary Love
+    { categoryId: "cat-4", count: 9, startIndex: 12 }, // Forbidden & Risky Desire
+    { categoryId: "cat-5", count: 4, startIndex: 21 }, // Midnight & Confession
+    { categoryId: "cat-6", count: 1, startIndex: 25 }, // Power Identity & Elite Lives
+  ];
 
-  for (const category of categories) {
-    for (let i = 0; i < category.storyCount; i++) {
+  categoryMapping.forEach(({ categoryId, count, startIndex }) => {
+    for (let i = 0; i < count; i++) {
+      const storyIndex = startIndex + i;
       if (storyIndex >= storyTitles.length) break;
 
       stories.push({
         id: `story-${storyIndex + 1}`,
-        categoryId: category.id,
+        categoryId,
         title: storyTitles[storyIndex],
-        author: authors[storyIndex % authors.length],
-        description: `A captivating tale of love, passion, and redemption. ${storyTitles[storyIndex]} follows two souls whose connection transcends all boundaries. Featuring ${Math.floor(Math.random() * 50) + 30} gripping chapters filled with tension, emotion, and unforgettable moments.`,
+        author: subCategories[storyIndex % subCategories.length],
+        description: `A captivating tale of love, passion, and connection. ${storyTitles[storyIndex]} explores deep emotions and unforgettable moments that will keep you turning pages.`,
         coverImage: coverImages[storyIndex % coverImages.length],
         rating: Math.random() * 0.4 + 4.5,
         reviewCount: Math.floor(Math.random() * 2000) + 500,
         totalChapters: Math.floor(Math.random() * 30) + 25,
-        genre: category.name,
+        genre: categories.find(c => c.id === categoryId)?.name || "Romance",
         isTrending: storyIndex < 10,
         createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
       });
-
-      storyIndex++;
     }
-  }
+  });
 
-  return stories.slice(0, 40);
+  return stories;
 };
 
 export const generateChapters = (storyId: string, storyTitle: string, totalChapters: number): Chapter[] => {

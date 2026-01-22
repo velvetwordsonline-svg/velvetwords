@@ -21,9 +21,9 @@ class SafeUploadService {
         description: { en: storyData.description },
         category: storyData.category,
         thumbnail: storyData.thumbnailPath,
-        status: 'draft', // Safe default
+        status: 'draft',
         uploadedAt: new Date(),
-        isDeleted: false // EXPLICIT - NEVER AUTO-DELETE
+        isDeleted: false
       });
       
       await story.save({ session });
@@ -38,7 +38,6 @@ class SafeUploadService {
       
       for (let i = 0; i < chapters.length; i++) {
         try {
-          // Translate chapter
           const translatedChapter = await translator.translateChapter(chapters[i]);
           
           const chapter = new Chapter({
@@ -47,7 +46,7 @@ class SafeUploadService {
             title: translatedChapter.title,
             content: translatedChapter.content,
             estimatedReadTime: this.calculateReadTime(translatedChapter.content.en),
-            isDeleted: false // EXPLICIT - PERSISTENT
+            isDeleted: false
           });
           
           await chapter.save({ session });
@@ -55,20 +54,18 @@ class SafeUploadService {
           
           console.log(`✅ Chapter ${i + 1} saved: ${chapter._id}`);
           
-          // Rate limiting
           if (i < chapters.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
           
         } catch (chapterError) {
           console.error(`❌ Chapter ${i + 1} failed:`, chapterError.message);
-          // Continue with other chapters - don't fail entire upload
         }
       }
       
       // 4. UPDATE STORY WITH FINAL DATA
       story.totalChapters = savedChapters.length;
-      story.status = 'published'; // Only after successful upload
+      story.status = 'published';
       story.lastModified = new Date();
       
       // Translate story metadata
@@ -90,7 +87,7 @@ class SafeUploadService {
       
       await story.save({ session });
       
-      // 5. LOG ADMIN ACTION (AUDIT TRAIL)
+      // 5. LOG ADMIN ACTION
       await this.logAdminAction(adminId, 'upload', story._id, session);
       
       // 6. COMMIT TRANSACTION
@@ -107,12 +104,9 @@ class SafeUploadService {
       };
       
     } catch (error) {
-      // ROLLBACK ON ERROR - BUT DON'T DELETE EXISTING STORIES
       await session.abortTransaction();
       console.error('❌ Upload failed, rolling back:', error);
-      
       throw new Error(`Upload failed: ${error.message}`);
-      
     } finally {
       session.endSession();
     }
@@ -131,22 +125,78 @@ class SafeUploadService {
       }
       
       if (hardDelete) {
-        // HARD DELETE - PERMANENT REMOVAL
         await Chapter.deleteMany({ storyId }, { session });
         await Story.findByIdAndDelete(storyId, { session });
         console.log(`🗑️ Hard deleted story: ${storyId}`);
       } else {
-        // SOFT DELETE - RECOMMENDED
         story.isDeleted = true;
         story.deletedAt = new Date();
         story.deletedBy = adminId;
         await story.save({ session });
         
-        // Soft delete chapters
         await Chapter.updateMany(
           { storyId },
           { isDeleted: true, deletedAt: new Date() },
           { session }
         );
         
-        console.log(`🔒 Soft deleted story: ${storyId}`);\n      }\n      \n      // Log admin action\n      await this.logAdminAction(adminId, 'delete', storyId, session);\n      \n      await session.commitTransaction();\n      \n      return {\n        success: true,\n        message: hardDelete ? 'Story permanently deleted' : 'Story archived (can be restored)'\n      };\n      \n    } catch (error) {\n      await session.abortTransaction();\n      throw error;\n    } finally {\n      session.endSession();\n    }\n  }\n  \n  // RESTORE SOFT-DELETED STORY\n  static async restoreStory(storyId, adminId) {\n    const story = await Story.findById(storyId);\n    if (!story || !story.isDeleted) {\n      throw new Error('Story not found or not deleted');\n    }\n    \n    story.isDeleted = false;\n    story.deletedAt = null;\n    story.deletedBy = null;\n    await story.save();\n    \n    // Restore chapters\n    await Chapter.updateMany(\n      { storyId },\n      { $unset: { isDeleted: 1, deletedAt: 1 } }\n    );\n    \n    await this.logAdminAction(adminId, 'restore', storyId);\n    \n    return { success: true, message: 'Story restored successfully' };\n  }\n  \n  // GET STORIES (EXCLUDE SOFT-DELETED)\n  static async getActiveStories(filters = {}) {\n    const query = { isDeleted: { $ne: true }, ...filters };\n    return await Story.find(query).sort({ createdAt: -1 });\n  }\n  \n  // GET CHAPTERS FOR STORY (EXCLUDE SOFT-DELETED)\n  static async getActiveChapters(storyId) {\n    return await Chapter.find({ \n      storyId, \n      isDeleted: { $ne: true } \n    }).sort({ chapterNumber: 1 });\n  }\n  \n  // UTILITY METHODS\n  static calculateReadTime(content) {\n    const textBlocks = content.filter(block => block.type === 'text');\n    const wordCount = textBlocks.reduce((count, block) => {\n      return count + (block.content?.split(' ').length || 0);\n    }, 0);\n    return Math.ceil(wordCount / 200); // 200 words per minute\n  }\n  \n  static async logAdminAction(adminId, action, storyId, session = null) {\n    try {\n      const admin = await Admin.findById(adminId).session(session);\n      if (admin) {\n        admin.actions.push({\n          action,\n          storyId,\n          timestamp: new Date()\n        });\n        await admin.save({ session });\n      }\n    } catch (error) {\n      console.warn('Failed to log admin action:', error.message);\n    }\n  }\n}\n\nmodule.exports = SafeUploadService;
+        console.log(`🔒 Soft deleted story: ${storyId}`);
+      }
+      
+      await this.logAdminAction(adminId, 'delete', storyId, session);
+      await session.commitTransaction();
+      
+      return {
+        success: true,
+        message: hardDelete ? 'Story permanently deleted' : 'Story archived (can be restored)'
+      };
+      
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  
+  // GET STORIES (EXCLUDE SOFT-DELETED)
+  static async getActiveStories(filters = {}) {
+    const query = { isDeleted: { $ne: true }, ...filters };
+    return await Story.find(query).sort({ createdAt: -1 });
+  }
+  
+  // GET CHAPTERS FOR STORY (EXCLUDE SOFT-DELETED)
+  static async getActiveChapters(storyId) {
+    return await Chapter.find({ 
+      storyId, 
+      isDeleted: { $ne: true } 
+    }).sort({ chapterNumber: 1 });
+  }
+  
+  // UTILITY METHODS
+  static calculateReadTime(content) {
+    const textBlocks = content.filter(block => block.type === 'text');
+    const wordCount = textBlocks.reduce((count, block) => {
+      return count + (block.content?.split(' ').length || 0);
+    }, 0);
+    return Math.ceil(wordCount / 200);
+  }
+  
+  static async logAdminAction(adminId, action, storyId, session = null) {
+    try {
+      const admin = await Admin.findById(adminId).session(session);
+      if (admin) {
+        admin.actions.push({
+          action,
+          storyId,
+          timestamp: new Date()
+        });
+        await admin.save({ session });
+      }
+    } catch (error) {
+      console.warn('Failed to log admin action:', error.message);
+    }
+  }
+}
+
+module.exports = SafeUploadService;

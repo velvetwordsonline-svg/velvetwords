@@ -16,13 +16,18 @@ export default function DashboardPage() {
   const loadStats = async () => {
     try {
       const { data } = await adminAPI.getStories();
+      // Handle different response structures
+      const storiesArray = data.stories || data || [];
+      const stories = Array.isArray(storiesArray) ? storiesArray : [];
+      
       setStats({
-        total: data.length,
-        published: data.filter(s => s.status === 'published').length,
-        draft: data.filter(s => s.status === 'draft').length,
+        total: stories.length,
+        published: stories.filter(s => s.status === 'published').length,
+        draft: stories.filter(s => s.status === 'draft').length,
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
+      setStats({ total: 0, published: 0, draft: 0 });
     } finally {
       setLoading(false);
     }

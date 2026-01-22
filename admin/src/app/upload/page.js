@@ -13,8 +13,39 @@ export default function UploadPage() {
     title: '',
     author: '',
     description: '',
-    category: 'romance',
+    category: 'everyday-chemistry',
   });
+
+  const categories = [
+    { id: 'everyday-chemistry', name: 'Everyday Chemistry' },
+    { id: 'slow-emotional', name: 'Slow & Emotional' },
+    { id: 'city-travel', name: 'City Travel & Temporary Love' },
+    { id: 'forbidden-risky', name: 'Forbidden & Risky Desire' },
+    { id: 'midnight-confession', name: 'Midnight & Confession' },
+    { id: 'power-elite', name: 'Power Identity & Elite Lives' },
+  ];
+
+  const subCategories = [
+    'Office Chemistry',
+    'One Last Goodbye',
+    'Age Gap Romance',
+    'City Love Story',
+    'Mind Games & Attraction',
+    'Secret Affair',
+    'Artistic Souls',
+    'Unspoken Desire',
+    'Slow Burn Romance',
+    'Travel & Temporary Love',
+    'Forbidden Desire',
+    'Therapist–Client Tension',
+    'Rivalry',
+    'Identity & Desire',
+    'Forbidden Attraction',
+    'Midnight Encounters',
+    'Second Chance Love',
+    'Midnight Confessions',
+    'Royal & Elite Lives',
+  ];
   const [thumbnail, setThumbnail] = useState(null);
   const [document, setDocument] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -82,15 +113,18 @@ export default function UploadPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Author</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
+              <select
                 required
                 value={formData.author}
                 onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter author name"
-              />
+              >
+                <option value="">Select subcategory</option>
+                {subCategories.map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -112,11 +146,9 @@ export default function UploadPage() {
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                <option value="romance">Romance</option>
-                <option value="thriller">Thriller</option>
-                <option value="fantasy">Fantasy</option>
-                <option value="mystery">Mystery</option>
-                <option value="scifi">Sci-Fi</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
               </select>
             </div>
 

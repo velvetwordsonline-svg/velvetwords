@@ -11,14 +11,25 @@ export default function Account() {
   const { user, isLoggedIn, stories, getReadingProgress, getChaptersByStoryId, logout, updateReadingProgress, verifyPhoneNumber, selectSubscription } = useApp();
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
+  // Add some sample reading progress for testing if none exists
+  useEffect(() => {
+    if (user && user.readingHistory.length === 0 && stories.length > 0) {
+      // Add sample progress for the first story
+      const firstStory = stories[0];
+      if (firstStory) {
+        updateReadingProgress(firstStory.id, 1, 0, 25);
+      }
+    }
+  }, [user, stories, updateReadingProgress]);
+
+  const handleSubscriptionSuccess = (phone: string, plan: string) => {
+    verifyPhoneNumber(phone);
+    selectSubscription(plan as "weekly" | "monthly" | "3-month");
+    setShowSubscriptionPopup(false);
+  };
+
   // If user is not logged in, show login interface
   if (!isLoggedIn || !user) {
-    const handleSubscriptionSuccess = (phone: string, plan: string) => {
-      verifyPhoneNumber(phone);
-      selectSubscription(plan as "weekly" | "monthly" | "3-month");
-      setShowSubscriptionPopup(false);
-    };
-
     return (
       <div className="bg-black min-h-screen">
         <Navigation />
@@ -58,7 +69,7 @@ export default function Account() {
             lastChapter: history.lastChapterRead,
             lastReadAt: history.lastReadAt,
             // Ensure proper image URL
-            coverImage: story.coverImage.startsWith('http') ? story.coverImage : `http://localhost:5001${story.coverImage}`
+            coverImage: story.coverImage.startsWith('http') ? story.coverImage : `https://velvetwords-backend.vercel.app${story.coverImage}`
           }
         : null;
     })
@@ -73,25 +84,14 @@ export default function Account() {
       : false
   );
 
-  const handleResumeReading = (storyId: string, chapterId: string) => {
-    navigate(`/reader/${storyId}/${chapterId}`);
-  };
-
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // Add some sample reading progress for testing if none exists
-  useEffect(() => {
-    if (user && user.readingHistory.length === 0 && stories.length > 0) {
-      // Add sample progress for the first story
-      const firstStory = stories[0];
-      if (firstStory) {
-        updateReadingProgress(firstStory.id, 1, 0, 25);
-      }
-    }
-  }, [user, stories, updateReadingProgress]);
+  const handleResumeReading = (storyId: string, chapterId: string) => {
+    navigate(`/reader/${storyId}/${chapterId}`);
+  };
 
   return (
     <div className="bg-black min-h-screen">

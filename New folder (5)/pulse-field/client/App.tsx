@@ -16,9 +16,6 @@ import PaymentPolicy from "./pages/PaymentPolicy";
 import StoryDetail from "./pages/StoryDetail";
 import Reader from "./pages/Reader";
 import NotFound from "./pages/NotFound";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUpload from "./pages/admin/AdminUpload";
 
 const queryClient = new QueryClient();
 
@@ -43,10 +40,7 @@ export default function App() {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/content-disclaimer" element={<ContentDisclaimer />} />
               <Route path="/payment-policy" element={<PaymentPolicy />} />
-              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/upload" element={<AdminUpload />} />
+              <Route path="/admin" element={<Navigate to="https://www.velvetwords.online/admin" replace />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

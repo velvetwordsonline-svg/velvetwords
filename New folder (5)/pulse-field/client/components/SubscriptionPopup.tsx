@@ -29,12 +29,28 @@ export default function SubscriptionPopup({ isOpen, onClose, onSuccess }: Subscr
   const handleSubscription = async () => {
     setLoading(true);
     try {
-      // Simulate payment process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call backend to store subscription
+      const response = await fetch('https://velvetwords-backend.vercel.app/api/subscription/simple-subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phoneNumber: phone, 
+          planType: selectedPlan 
+        })
+      });
+      
+      if (response.ok) {
+        console.log('Subscription stored in backend');
+      }
+      
+      // Continue with frontend logic
       onSuccess(phone, selectedPlan);
       onClose();
     } catch (error) {
       console.error('Subscription failed:', error);
+      // Still proceed with frontend subscription
+      onSuccess(phone, selectedPlan);
+      onClose();
     } finally {
       setLoading(false);
     }

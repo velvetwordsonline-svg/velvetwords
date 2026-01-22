@@ -1,12 +1,66 @@
-const API_BASE = 'https://www.velvetwords.online/backend/api';
+const API_BASE = 'https://velvetwords-backend.vercel.app/api';
 
 export async function getStoriesByCategory(category = null, lang = 'en') {
   try {
+    // Always fetch fresh data from backend first
     let url = `${API_BASE}/stories?lang=${lang}`;
     if (category) url += `&category=${category}`;
     
-    const response = await fetch(url);
-    return await response.json();
+    let stories = [];
+    
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const backendStories = await response.json();
+        console.log('Backend stories with thumbnails:', backendStories);
+        
+        // Format backend stories properly
+        stories = backendStories.map(story => ({
+          id: story.id || story._id,
+          title: story.title,
+          author: story.author,
+          description: story.description,
+          category: story.category,
+          totalChapters: story.totalChapters || 1,
+          coverImage: story.thumbnail || '/assets/portrait/1p.jpg'
+        }));
+      }
+    } catch (error) {
+      console.warn('Backend fetch failed, using localStorage');
+    }
+    
+    // Also get from localStorage (for admin uploaded stories)
+    const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
+    console.log('Raw localStorage stories:', localStories);
+    
+    // Merge and deduplicate stories
+    const allStories = [...stories];
+    
+    localStories.forEach(localStory => {
+      if (!allStories.find(s => s.id === localStory.id || s._id === localStory._id)) {
+        console.log('Processing local story:', localStory.title, 'thumbnail:', localStory.thumbnail);
+        
+        // Format local story to match expected structure
+        const formattedStory = {
+          id: localStory._id || localStory.id,
+          title: localStory.title?.en || localStory.title,
+          author: localStory.author,
+          description: localStory.description?.en || localStory.description,
+          category: localStory.category,
+          totalChapters: localStory.totalChapters || 1,
+          coverImage: localStory.thumbnail || '/assets/portrait/1p.jpg'
+        };
+        console.log('Final coverImage:', formattedStory.coverImage);
+        allStories.push(formattedStory);
+      }
+    });
+    
+    // Filter by category if specified
+    const filteredStories = category 
+      ? allStories.filter(story => story.category === category)
+      : allStories;
+    
+    return filteredStories;
   } catch (error) {
     console.error('Error:', error);
     return [];

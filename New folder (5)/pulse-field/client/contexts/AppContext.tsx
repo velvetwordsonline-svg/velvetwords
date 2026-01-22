@@ -3,7 +3,7 @@ import { User, Story, Chapter, ReadingProgress } from "@/lib/mockData";
 import { defaultUser } from "@/lib/mockData";
 
 // API Configuration
-const API_BASE = "http://localhost:5001/api";
+const API_BASE = "https://velvetwords-backend.vercel.app/api";
 
 interface AppContextType {
   user: User | null;
@@ -33,48 +33,75 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        // First try localStorage
-        const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
-        
-        if (localStories.length > 0) {
-          const formattedStories: Story[] = localStories.map((story: any, index: number) => ({
-            id: story.id,
-            categoryId: story.category || "cat-1",
-            title: story.title,
-            author: story.author,
-            description: story.description,
-            coverImage: story.coverImage || "/assets/portrait/1p.jpg",
-            rating: story.rating || 4.5,
-            reviewCount: story.reviewCount || 100,
-            totalChapters: story.totalChapters || 1,
-            genre: story.category || "Romance",
-            isTrending: index < 3,
-            createdAt: story.createdAt || new Date().toISOString()
-          }));
-          setStories(formattedStories);
-          setLoading(false);
-          return;
-        }
-        
-        // Fallback to backend if no local stories
+        // Always fetch from backend to get latest data including deletions
         const response = await fetch(`${API_BASE}/stories`);
         if (response.ok) {
           const data = await response.json();
-          const formattedStories: Story[] = data.map((story: any, index: number) => ({
-            id: story.id,
-            categoryId: story.category || "cat-1",
-            title: story.title,
-            author: story.author,
-            description: story.description,
-            coverImage: story.thumbnail ? `http://localhost:5001${story.thumbnail}` : "/assets/portrait/1p.jpg",
-            rating: story.rating || 4.5,
-            reviewCount: story.reviewCount || 100,
-            totalChapters: story.totalChapters,
-            genre: story.category || "Romance",
-            isTrending: index < 3,
-            createdAt: story.createdAt
-          }));
+          const formattedStories: Story[] = data.map((story: any, index: number) => {
+            // Handle image URL properly
+            let coverImage = story.thumbnail || "/assets/portrait/1p.jpg";
+            
+            // Handle base64 images (from admin uploads)
+            if (coverImage && coverImage.startsWith('data:')) {
+              // Keep base64 as is
+            } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
+              coverImage = `https://velvetwords-backend.vercel.app${coverImage}`;
+            }
+            
+            return {
+              id: story.id,
+              categoryId: story.category || "cat-1",
+              title: story.title,
+              author: story.author,
+              description: story.description,
+              coverImage,
+              rating: story.rating || 4.5,
+              reviewCount: story.reviewCount || 100,
+              totalChapters: story.totalChapters,
+              genre: story.category || "Romance",
+              isTrending: index < 3,
+              createdAt: story.createdAt
+            };
+          });
           setStories(formattedStories);
+          // Update localStorage with latest data including thumbnails
+          const storiesForStorage = data.map(story => ({
+            ...story,
+            thumbnail: story.thumbnail // Ensure thumbnail is preserved
+          }));
+          localStorage.setItem('stories', JSON.stringify(storiesForStorage));
+        } else {
+          // Fallback to localStorage if backend fails
+          const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
+          if (localStories.length > 0) {
+            const formattedStories: Story[] = localStories.map((story: any, index: number) => {
+              // Handle image URL - ensure it has the full backend URL
+              let coverImage = story.coverImage || story.thumbnail || "/assets/portrait/1p.jpg";
+              
+              // Handle base64 images (from admin uploads)
+              if (coverImage && coverImage.startsWith('data:')) {
+                // Keep base64 as is
+              } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
+                coverImage = `https://velvetwords-backend.vercel.app${coverImage}`;
+              }
+              
+              return {
+                id: story.id,
+                categoryId: story.category || "cat-1",
+                title: story.title,
+                author: story.author,
+                description: story.description,
+                coverImage,
+                rating: story.rating || 4.5,
+                reviewCount: story.reviewCount || 100,
+                totalChapters: story.totalChapters || 1,
+                genre: story.category || "Romance",
+                isTrending: index < 3,
+                createdAt: story.createdAt || new Date().toISOString()
+              };
+            });
+            setStories(formattedStories);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch stories:", error);
@@ -84,6 +111,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
 
     fetchStories();
+    
+    // Set up periodic sync every 30 seconds to catch admin deletions
+    const syncInterval = setInterval(fetchStories, 30000);
     
     // Listen for localStorage changes
     const handleStorageChange = (e: StorageEvent) => {
@@ -96,6 +126,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.addEventListener('storage', handleStorageChange);
     
     return () => {
+      clearInterval(syncInterval);
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);

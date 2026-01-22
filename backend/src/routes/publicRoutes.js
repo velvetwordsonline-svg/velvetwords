@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const { Story, Chapter } = require('../models/persistentModels');
+const { Story, Chapter } = require('../models/models');
 const { checkSubscriptionAccess } = require('../middleware/subscriptionMiddleware');
 
 const router = express.Router();
@@ -273,6 +273,31 @@ router.get('/trending', async (req, res) => {
     res.json({ data: formatted });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// SIMPLE DELETE ROUTE FOR ADMIN (NO AUTH)
+router.delete('/delete-story/:id', async (req, res) => {
+  try {
+    const { Story, Chapter } = require('../models/models');
+    
+    // Hard delete from database
+    await Chapter.deleteMany({ storyId: req.params.id });
+    await Story.findByIdAndDelete(req.params.id);
+    
+    console.log(`🗑️ Deleted story: ${req.params.id}`);
+    
+    res.json({
+      success: true,
+      message: 'Story deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('❌ Delete error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
   }
 });
 

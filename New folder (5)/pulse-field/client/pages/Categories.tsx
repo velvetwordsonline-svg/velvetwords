@@ -171,13 +171,17 @@ export default function Categories() {
                   "
                 >
                   {/* Thumbnail */}
-                  {story.coverImage && (
+                  <div className="w-full h-64 bg-gray-800 overflow-hidden">
                     <img
-                      src={story.coverImage}
+                      src={story.coverImage || '/assets/portrait/1p.jpg'}
                       alt={story.title}
-                      className="w-full h-64 object-cover"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log('Image failed to load:', story.coverImage);
+                        e.currentTarget.src = '/assets/portrait/1p.jpg';
+                      }}
                     />
-                  )}
+                  </div>
                   
                   {/* Story Info */}
                   <div className="p-4">

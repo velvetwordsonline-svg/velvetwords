@@ -172,4 +172,73 @@ router.get('/status/:phoneNumber', async (req, res) => {
   }
 });
 
+// SIMPLE USER SUBSCRIPTION (NO AUTH REQUIRED)
+router.post('/simple-subscribe', async (req, res) => {
+  try {
+    const { phoneNumber, planType } = req.body;
+    
+    console.log('Simple subscription request:', { phoneNumber, planType });
+    
+    // Calculate expiry based on plan
+    const now = new Date();
+    let expiryDate;
+    
+    switch(planType) {
+      case 'daily':
+        expiryDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        break;
+      case 'weekly':
+        expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly':
+        expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        expiryDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
+    
+    // Create or update user
+    let user = await User.findOne({ phoneNumber });
+    if (!user) {
+      user = new User({ phoneNumber });
+    }
+    user.lastLoginAt = new Date();
+    await user.save();
+    
+    // Deactivate existing subscriptions
+    await Subscription.updateMany(
+      { phoneNumber, isActive: true },
+      { isActive: false }
+    );
+    
+    // Create new active subscription
+    const subscription = new Subscription({
+      phoneNumber,
+      planType,
+      startDate: now,
+      expiryDate,
+      amount: planType === 'daily' ? 10 : planType === 'weekly' ? 20 : 30,
+      paymentStatus: 'completed',
+      isActive: true
+    });
+    
+    await subscription.save();
+    
+    console.log('Subscription created:', subscription._id);
+    
+    res.json({
+      success: true,
+      subscription: {
+        planType,
+        expiryDate,
+        isActive: true
+      }
+    });
+    
+  } catch (error) {
+    console.error('Simple subscription error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

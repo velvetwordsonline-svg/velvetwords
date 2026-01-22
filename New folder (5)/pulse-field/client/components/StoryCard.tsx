@@ -60,7 +60,7 @@ export default function StoryCard({
           />
 
           {/* Dark overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-20"></div>
 
           {/* Badges - Removed */}
 

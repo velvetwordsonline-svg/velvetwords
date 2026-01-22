@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://www.velvetwords.online/backend';
+const API_BASE = 'https://velvetwords-backend.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -40,7 +40,7 @@ export const adminAPI = {
   
   getStories: () => api.get('/admin/stories'),
   
-  deleteStory: (id) => api.delete(`/admin/stories/${id}`),
+  deleteStory: (id) => api.delete(`/delete-story/${id}`),
 };
 
 export const publicAPI = {

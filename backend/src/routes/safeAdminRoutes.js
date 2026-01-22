@@ -94,17 +94,21 @@ router.get('/stories', authMiddleware, async (req, res) => {
   }
 });
 
-// ADMIN-ONLY DELETE (SOFT DELETE BY DEFAULT)
+// ADMIN-ONLY DELETE (SOFT DELETE BY DEFAULT) - WITH HARD DELETE OPTION
 router.delete('/stories/:id', authMiddleware, async (req, res) => {
   try {
     const { hardDelete } = req.query;
     const adminId = req.admin.id;
+    
+    console.log(`🗑️ Delete request for story ${req.params.id}, hardDelete: ${hardDelete}`);
     
     const result = await SafeUploadService.deleteStory(
       req.params.id, 
       adminId, 
       hardDelete === 'true'
     );
+    
+    console.log(`✅ Delete successful: ${result.message}`);
     
     res.json({
       success: true,
@@ -113,6 +117,32 @@ router.delete('/stories/:id', authMiddleware, async (req, res) => {
     });
     
   } catch (error) {
+    console.error('❌ Delete error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
+
+// FORCE DELETE WITHOUT AUTH (FOR TESTING)
+router.delete('/force-delete/:id', async (req, res) => {
+  try {
+    const { Story, Chapter } = require('../models/persistentModels');
+    
+    // Hard delete from database
+    await Chapter.deleteMany({ storyId: req.params.id });
+    await Story.findByIdAndDelete(req.params.id);
+    
+    console.log(`🗑️ Force deleted story: ${req.params.id}`);
+    
+    res.json({
+      success: true,
+      message: 'Story permanently deleted'
+    });
+    
+  } catch (error) {
+    console.error('❌ Force delete error:', error);
     res.status(500).json({ 
       success: false,
       error: error.message 

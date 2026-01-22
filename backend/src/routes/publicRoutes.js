@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const { Story, Chapter } = require('../models/models');
+const { Story, Chapter } = require('../models/persistentModels');
 const { checkSubscriptionAccess } = require('../middleware/subscriptionMiddleware');
 
 const router = express.Router();
@@ -9,7 +9,10 @@ const router = express.Router();
 router.get('/stories', async (req, res) => {
   try {
     const { lang = 'en', category } = req.query;
-    const query = { status: 'published' };
+    const query = { 
+      status: 'published',
+      isDeleted: { $ne: true }
+    };
     if (category) query.category = category;
 
     const stories = await Story.find(query).sort({ createdAt: -1 });
@@ -229,14 +232,18 @@ router.get('/trending', async (req, res) => {
     // First try to get stories marked as trending
     let stories = await Story.find({ 
       status: 'published',
-      isTrending: true 
+      isTrending: true,
+      isDeleted: { $ne: true }
     })
     .sort({ trendingOrder: 1, createdAt: -1 })
     .limit(12);
 
     // If no trending stories, get latest published stories
     if (stories.length === 0) {
-      stories = await Story.find({ status: 'published' })
+      stories = await Story.find({ 
+        status: 'published',
+        isDeleted: { $ne: true }
+      })
         .sort({ createdAt: -1 })
         .limit(12);
     }

@@ -16,9 +16,13 @@ export default function StoriesPage() {
   const loadStories = async () => {
     try {
       const { data } = await adminAPI.getStories();
-      setStories(data);
+      // Handle different response structures
+      const storiesArray = data.stories || data || [];
+      setStories(Array.isArray(storiesArray) ? storiesArray : []);
     } catch (error) {
+      console.error('Load stories error:', error);
       toast.error('Failed to load stories');
+      setStories([]);
     } finally {
       setLoading(false);
     }

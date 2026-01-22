@@ -6,7 +6,7 @@ const translator = require('./translator');
 class SafeUploadService {
   
   // TRANSACTION-SAFE STORY UPLOAD
-  static async uploadStory(storyData, docxPath, adminId) {
+  static async uploadStory(storyData, docxBuffer, adminId) {
     const session = await mongoose.startSession();
     
     try {
@@ -29,8 +29,8 @@ class SafeUploadService {
       await story.save({ session });
       console.log(`✅ Story created: ${story._id}`);
       
-      // 2. PARSE DOCX SAFELY
-      const chapters = await docxParser.parseDocx(docxPath);
+      // 2. PARSE DOCX SAFELY FROM BUFFER
+      const chapters = await docxParser.parseDocxBuffer(docxBuffer);
       console.log(`📖 Parsed ${chapters.length} chapters`);
       
       // 3. SAVE CHAPTERS (TRANSACTION-SAFE)

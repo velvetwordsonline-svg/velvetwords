@@ -5,18 +5,20 @@ const path = require('path');
 class DocxParser {
   async parseDocx(filePath) {
     const buffer = await fs.readFile(filePath);
-    
-    // Extract images and text
+    return this.parseDocxBuffer(buffer);
+  }
+
+  async parseDocxBuffer(buffer) {
+    // Extract images and text from buffer
     const result = await mammoth.convertToHtml(
       { buffer },
       {
         convertImage: mammoth.images.imgElement(async (image) => {
+          // For Vercel, we'll convert images to base64 instead of saving to disk
           const imageBuffer = await image.read();
-          const imageName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${image.contentType.split('/')[1]}`;
-          const imagePath = path.join(process.env.PUBLIC_DIR, 'images', imageName);
-          
-          await fs.writeFile(imagePath, imageBuffer);
-          return { src: `/images/${imageName}` };
+          const base64 = imageBuffer.toString('base64');
+          const mimeType = image.contentType || 'image/jpeg';
+          return { src: `data:${mimeType};base64,${base64}` };
         })
       }
     );

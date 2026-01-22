@@ -7,20 +7,14 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// SAFE MULTER CONFIGURATION
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const dir = file.fieldname === 'thumbnail' ? './uploads/thumbnails' : './uploads';
-    await fs.mkdir(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+// SAFE MULTER CONFIGURATION - MEMORY STORAGE FOR VERCEL
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
   fileFilter: (req, file, cb) => {
     if (file.fieldname === 'thumbnail') {
       if (file.mimetype.startsWith('image/')) {
@@ -38,18 +32,27 @@ const upload = multer({
   }
 });
 
-// SAFE STORY UPLOAD - PERSISTENT STORAGE
+// SAFE STORY UPLOAD - MEMORY STORAGE FOR VERCEL
 router.post('/upload-story', authMiddleware, upload.fields([
   { name: 'thumbnail', maxCount: 1 },
   { name: 'document', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const { title, author, description, category } = req.body;
-    const thumbnailPath = req.files.thumbnail ? `/uploads/thumbnails/${req.files.thumbnail[0].filename}` : null;
-    const docxPath = req.files.document[0].path;
     const adminId = req.admin.id;
 
     console.log('📤 Admin upload request:', { title, author, category });
+    
+    // Handle thumbnail as base64 or store in database
+    let thumbnailPath = null;
+    if (req.files.thumbnail && req.files.thumbnail[0]) {
+      const thumbnailBuffer = req.files.thumbnail[0].buffer;
+      const thumbnailBase64 = `data:${req.files.thumbnail[0].mimetype};base64,${thumbnailBuffer.toString('base64')}`;
+      thumbnailPath = thumbnailBase64;
+    }
+    
+    // Handle document buffer
+    const docxBuffer = req.files.document[0].buffer;
     
     // SAFE UPLOAD WITH TRANSACTION
     const result = await SafeUploadService.uploadStory({
@@ -58,14 +61,7 @@ router.post('/upload-story', authMiddleware, upload.fields([
       description,
       category,
       thumbnailPath
-    }, docxPath, adminId);
-    
-    // CLEANUP TEMP FILE
-    try {
-      await fs.unlink(docxPath);
-    } catch (cleanupError) {
-      console.warn('Failed to cleanup temp file:', cleanupError.message);
-    }
+    }, docxBuffer, adminId);
     
     res.json({
       success: true,

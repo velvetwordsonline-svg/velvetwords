@@ -5,6 +5,7 @@ const path = require('path');
 require('dotenv').config();
 
 const adminRoutes = require('./routes/adminRoutes');
+const safeAdminRoutes = require('./routes/safeAdminRoutes');
 const publicRoutes = require('./routes/publicRoutes');
 const authRoutes = require('./routes/authRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
@@ -29,7 +30,8 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Routes
 app.use('/api/admin', authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin', safeAdminRoutes); // SAFE PERSISTENT ROUTES
+app.use('/api/admin', adminRoutes); // FALLBACK ROUTES
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api', publicRoutes);
 app.use('/api', userRoutes);

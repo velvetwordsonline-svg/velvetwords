@@ -14,6 +14,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Add response interceptor to handle token expiration
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const adminAPI = {
   login: (credentials) => api.post('/admin/login', credentials),
   

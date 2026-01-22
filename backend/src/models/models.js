@@ -49,8 +49,21 @@ const adminSchema = new mongoose.Schema({
   email: String
 }, { timestamps: true });
 
+// User Model
+const userSchema = new mongoose.Schema({
+  phoneNumber: { type: String, required: true, unique: true },
+  subscriptionType: { type: String, enum: ['daily', 'weekly', 'monthly'], default: null },
+  subscriptionExpiry: { type: Date, default: null },
+  readingHistory: [{
+    storyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Story' },
+    chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' },
+    readAt: { type: Date, default: Date.now }
+  }]
+}, { timestamps: true });
+
 module.exports = {
   Story: mongoose.models.Story || mongoose.model('Story', storySchema),
   Chapter: mongoose.models.Chapter || mongoose.model('Chapter', chapterSchema),
-  Admin: mongoose.models.Admin || mongoose.model('Admin', adminSchema)
+  Admin: mongoose.models.Admin || mongoose.model('Admin', adminSchema),
+  User: mongoose.models.User || mongoose.model('User', userSchema)
 };

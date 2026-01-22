@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+// API Configuration
+const API_BASE = 'http://localhost:5001/api';
+
 // Helper function to convert file to base64
 const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -64,14 +67,10 @@ export default function AdminUpload() {
     setLoading(true);
     
     try {
-      console.log('Form data:', formData);
-      console.log('Files:', files);
-      
       if (isEditing && editId) {
-        // Update existing story
+        // Update existing story (localStorage only for now)
         const existingStories = JSON.parse(localStorage.getItem('stories') || '[]');
         
-        // Handle thumbnail conversion if new file is uploaded
         let newCoverImage = null;
         if (files.thumbnail) {
           newCoverImage = await convertFileToBase64(files.thumbnail);
@@ -92,8 +91,6 @@ export default function AdminUpload() {
         });
         
         localStorage.setItem('stories', JSON.stringify(updatedStories));
-        
-        // Trigger storage event
         window.dispatchEvent(new StorageEvent('storage', {
           key: 'stories',
           newValue: JSON.stringify(updatedStories)
@@ -101,16 +98,52 @@ export default function AdminUpload() {
         
         alert('Story updated successfully!');
       } else {
-        // Create new story
+        // Create new story with DOCX processing
+        if (!files.document) {
+          alert('Please select a DOCX file');
+          return;
+        }
+        
+        // Create FormData for backend upload
+        const uploadData = new FormData();
+        uploadData.append('title', formData.title);
+        uploadData.append('author', formData.author);
+        uploadData.append('description', formData.description);
+        uploadData.append('category', formData.category);
+        uploadData.append('document', files.document);
+        if (files.thumbnail) {
+          uploadData.append('thumbnail', files.thumbnail);
+        }
+        
+        // Get admin token (assuming stored in localStorage)
+        const adminToken = localStorage.getItem('adminToken');
+        
+        // Upload to backend
+        const response = await fetch(`${API_BASE}/admin/upload-story`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          },
+          body: uploadData
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Upload failed');
+        }
+        
+        const result = await response.json();
+        console.log('Upload successful:', result);
+        
+        // Also add to localStorage for immediate display
         const newStory = {
-          id: Date.now().toString(),
+          id: result.storyId,
           title: formData.title,
           author: formData.author,
           description: formData.description,
           category: formData.category,
           coverImage: files.thumbnail ? await convertFileToBase64(files.thumbnail) : null,
-          thumbnail: files.thumbnail ? `/thumbnails/${Date.now()}-${files.thumbnail.name}` : null,
-          totalChapters: 1,
+          totalChapters: 1, // Will be updated by backend
           createdAt: new Date().toISOString()
         };
         
@@ -118,15 +151,15 @@ export default function AdminUpload() {
         existingStories.push(newStory);
         localStorage.setItem('stories', JSON.stringify(existingStories));
         
-        // Trigger storage event
         window.dispatchEvent(new StorageEvent('storage', {
           key: 'stories',
           newValue: JSON.stringify(existingStories)
         }));
         
-        alert('Story uploaded successfully!');
+        alert('Story uploaded and processed successfully! Chapters have been automatically created.');
       }
-      navigate('/categories'); // Redirect to categories to see the story
+      
+      navigate('/categories');
       
     } catch (error) {
       console.error('Upload error:', error);
@@ -226,15 +259,20 @@ export default function AdminUpload() {
 
           <div>
             <label className="block text-sm font-medium text-white mb-2">
-              Story Document (DOCX)
+              Story Document (DOCX) {!isEditing && <span className="text-red-400">*</span>}
             </label>
             <input
               type="file"
-              accept=".docx"
+              accept=".docx,.doc"
               required={!isEditing}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               onChange={(e) => setFiles({...files, document: e.target.files?.[0] || null})}
             />
+            {!isEditing && (
+              <p className="text-sm text-gray-400 mt-1">
+                Upload a DOCX file. Chapters will be automatically detected and created.
+              </p>
+            )}
           </div>
 
           <div>
@@ -244,7 +282,6 @@ export default function AdminUpload() {
             <input
               type="file"
               accept="image/*"
-              required={!isEditing}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               onChange={(e) => setFiles({...files, thumbnail: e.target.files?.[0] || null})}
             />
@@ -255,7 +292,11 @@ export default function AdminUpload() {
             disabled={loading}
             className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
           >
-            {loading ? (isEditing ? 'Updating...' : 'Uploading...') : (isEditing ? 'Update Story' : 'Upload Story')}
+            {loading ? (
+              isEditing ? 'Updating...' : 'Processing DOCX & Creating Chapters...'
+            ) : (
+              isEditing ? 'Update Story' : 'Upload & Process Story'
+            )}
           </button>
         </form>
       </div>

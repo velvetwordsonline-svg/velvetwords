@@ -46,15 +46,11 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5001;
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.log(`⚠️  Port ${PORT} busy, trying ${PORT + 1}...`);
-    app.listen(PORT + 1, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT + 1}`);
-    });
+    console.log(`❌ Port ${PORT} is busy. Please kill existing processes first.`);
+    process.exit(1);
   }
 });
-
-module.exports = server;

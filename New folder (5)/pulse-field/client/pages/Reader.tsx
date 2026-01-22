@@ -16,15 +16,49 @@ interface ChapterContent {
   estimatedReadTime: number;
 }
 
+interface ChapterListItem {
+  id: string;
+  number: number;
+  title: string;
+  estimatedReadTime: number;
+}
+
 export default function ReaderPage() {
   const { storyId, chapterId } = useParams<{ storyId: string; chapterId?: string }>();
   const navigate = useNavigate();
-  const { getChaptersByStoryId, canAccessChapter, verifyPhoneNumber, selectSubscription } = useApp();
+  const { canAccessChapter, verifyPhoneNumber, selectSubscription } = useApp();
   const [currentChapter, setCurrentChapter] = useState<ChapterContent | null>(null);
+  const [chapters, setChapters] = useState<ChapterListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
 
+  // Fetch chapters list for navigation
+  useEffect(() => {
+    if (!storyId) return;
+
+    const fetchChapters = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/stories/${storyId}/chapters`);
+        if (response.ok) {
+          const chaptersData = await response.json();
+          const formattedChapters = chaptersData.map((ch: any) => ({
+            id: ch.id,
+            number: ch.chapterNumber,
+            title: ch.title,
+            estimatedReadTime: ch.estimatedReadTime
+          }));
+          setChapters(formattedChapters);
+        }
+      } catch (err) {
+        console.error("Failed to fetch chapters:", err);
+      }
+    };
+
+    fetchChapters();
+  }, [storyId]);
+
+  // Fetch current chapter content
   useEffect(() => {
     if (!storyId) return;
 
@@ -38,7 +72,7 @@ export default function ReaderPage() {
           // Fetch specific chapter
           url = `${API_BASE}/stories/${storyId}/chapters/${chapterId}`;
         } else {
-          // Fetch first chapter
+          // Fetch story with first chapter
           url = `${API_BASE}/stories/${storyId}`;
         }
 
@@ -75,7 +109,7 @@ export default function ReaderPage() {
         });
       } catch (err) {
         console.error("Failed to fetch chapter:", err);
-        setError("Chapter not found");
+        setError("Chapter not found. This story may not have been processed yet.");
       } finally {
         setLoading(false);
       }
@@ -105,6 +139,9 @@ export default function ReaderPage() {
       <div className="w-full h-screen flex items-center justify-center bg-black text-white">
         <div className="text-center">
           <p className="text-xl mb-4">{error}</p>
+          <p className="text-sm text-gray-400 mb-4">
+            If this is a newly uploaded story, please wait for processing to complete.
+          </p>
           <button
             onClick={() => navigate(`/story/${storyId}`)}
             className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90"
@@ -131,7 +168,7 @@ export default function ReaderPage() {
   //   );
   // }
 
-  const chapters = getChaptersByStoryId(storyId);
+
 
   const handleAuthSuccess = (phone: string, plan: string) => {
     verifyPhoneNumber(phone);

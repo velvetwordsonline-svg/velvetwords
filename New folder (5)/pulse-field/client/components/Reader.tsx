@@ -18,7 +18,7 @@ interface ReaderProps {
 }
 
 export default function Reader({ storyId, chapterId, chapters, currentChapter, onNavigate }: ReaderProps) {
-  const { updateReadingProgress, getChaptersByStoryId } = useApp();
+  const { updateReadingProgress, getChaptersByStoryId, canAccessChapter, user } = useApp();
   const [showControls, setShowControls] = useState(true);
   const [fontSize, setFontSize] = useState(16);
   const [lineHeight, setLineHeight] = useState(1.8);
@@ -28,6 +28,29 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
   const currentIndex = chapters.findIndex((c) => c.id === chapterId);
   const previousChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null;
   const nextChapter = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null;
+
+  // Check if user can access this chapter
+  const hasAccess = canAccessChapter(currentChapter.chapterNumber);
+
+  // If no access, show subscription prompt
+  if (!hasAccess) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-black text-white">
+        <div className="text-center max-w-md mx-auto px-6">
+          <h2 className="text-2xl font-bold mb-4">Subscription Required</h2>
+          <p className="text-gray-400 mb-6">
+            Subscribe to unlock Chapter {currentChapter.chapterNumber} and continue reading this amazing story.
+          </p>
+          <button
+            onClick={() => window.location.href = '/account'}
+            className="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90"
+          >
+            Get Subscription
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Handle scroll
   useEffect(() => {
@@ -124,7 +147,7 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
           {/* Chapter Navigation */}
           <div className="mt-16 pt-8 border-t border-white/20">
             <div className="grid grid-cols-2 gap-4">
-              {previousChapter ? (
+              {previousChapter && canAccessChapter(previousChapter.number) ? (
                 <button
                   onClick={() => onNavigate(previousChapter.id)}
                   className="p-4 border-[3px] border-white/20 rounded-lg hover:border-primary text-left transition-all group"
@@ -140,7 +163,7 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
                 <div></div>
               )}
 
-              {nextChapter ? (
+              {nextChapter && canAccessChapter(nextChapter.number) ? (
                 <button
                   onClick={() => onNavigate(nextChapter.id)}
                   className="p-4 border-[3px] border-white/20 rounded-lg hover:border-primary text-right transition-all group"
@@ -151,6 +174,18 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
                   </div>
                   <p className="text-white font-bold">Chapter {nextChapter.number}</p>
                   <p className="text-gray-400 text-sm">Next Chapter</p>
+                </button>
+              ) : nextChapter ? (
+                <button
+                  onClick={() => window.location.href = '/account'}
+                  className="p-4 border-[3px] border-yellow-500/50 rounded-lg hover:border-yellow-500 text-right transition-all group bg-yellow-500/10"
+                >
+                  <div className="flex items-center justify-end gap-2 text-yellow-500 mb-2">
+                    <span className="text-xs font-bold">LOCKED</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                  <p className="text-white font-bold">Chapter {nextChapter.number}</p>
+                  <p className="text-yellow-400 text-sm">Subscribe to unlock</p>
                 </button>
               ) : (
                 <div></div>
@@ -165,11 +200,7 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
       </div>
 
       {/* Bottom Controls Bar */}
-      <div
-        className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent border-t border-primary/30 transition-all duration-300 ${
-          showControls ? "translate-y-0" : "translate-y-full"
-        } z-30`}
-      >
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent border-t border-primary/30 translate-y-0 z-30">
         <div className="max-w-3xl mx-auto px-6 py-4">
           <div className="space-y-4">
             {/* Controls */}
@@ -204,8 +235,9 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
               </div>
 
               <button
-                onClick={() => setShowControls(false)}
-                className="p-2 text-white hover:text-primary transition-colors"
+                onClick={() => {}}
+                className="p-2 text-white hover:text-primary transition-colors opacity-50 cursor-not-allowed"
+                disabled
               >
                 <X className="w-5 h-5" />
               </button>

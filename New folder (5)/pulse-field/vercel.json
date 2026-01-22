@@ -6,8 +6,16 @@
   "outputDirectory": "dist/spa",
   "rewrites": [
     {
+      "source": "/admin/(.*)",
+      "destination": "https://admin-three-zeta-82.vercel.app/$1"
+    },
+    {
+      "source": "/admin",
+      "destination": "https://admin-three-zeta-82.vercel.app/"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": "https://velvetwords-backend.vercel.app/$1"
+      "destination": "https://velvetwords-backend.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",

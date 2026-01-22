@@ -17,6 +17,16 @@ router.get('/stories', async (req, res) => {
 
     const stories = await Story.find(query).sort({ createdAt: -1 });
     
+    // Category mapping
+    const categoryMap = {
+      'everyday-chemistry': 'Everyday Chemistry',
+      'slow-emotional': 'Slow & Emotional',
+      'city-travel': 'City Travel & Temporary Love',
+      'forbidden-risky': 'Forbidden & Risky Desire',
+      'midnight-confession': 'Midnight & Confession',
+      'power-elite': 'Power Identity & Elite Lives'
+    };
+    
     // Format response based on language
     const formatted = stories.map(story => ({
       id: story._id,
@@ -24,7 +34,7 @@ router.get('/stories', async (req, res) => {
       author: story.author,
       description: story.description[lang] || story.description.en,
       thumbnail: story.thumbnail,
-      category: story.category,
+      category: categoryMap[story.category] || story.category,
       totalChapters: story.totalChapters,
       rating: story.rating,
       reviewCount: story.reviewCount,

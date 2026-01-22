@@ -75,9 +75,12 @@ export default function StoriesPage() {
                 <div key={story._id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
                   {story.thumbnail && (
                     <img
-                      src={`http://localhost:5001${story.thumbnail}`}
+                      src={story.thumbnail.startsWith('data:') ? story.thumbnail : `https://velvetwords-backend.vercel.app${story.thumbnail}`}
                       alt={story.title.en}
                       className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
                     />
                   )}
                   <div className="p-4">

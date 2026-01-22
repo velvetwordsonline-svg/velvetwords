@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://velvetwords-backend.vercel.app/api';
-const IMAGE_BASE = 'https://velvetwords-backend.vercel.app';
+const API_BASE = 'https://www.velvetwords.online/backend';
+const IMAGE_BASE = 'https://www.velvetwords.online/backend';
 
 export async function getStoriesByCategory(category: string | null = null, lang: string = 'en') {
   // Use localStorage as primary source

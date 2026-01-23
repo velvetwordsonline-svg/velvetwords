@@ -29,100 +29,85 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [chapters, setChapters] = useState<{ [key: string]: Chapter[] }>({});
   const [loading, setLoading] = useState(true);
 
-  // Fetch stories from backend with better error handling and faster loading
+  // Optimized fetch with caching to reduce Vercel resource usage
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        // Reduce timeout to 3 seconds for faster fallback
-        const timeoutId = setTimeout(() => {
-          console.log('Loading timeout, using fallback data');
-          setLoading(false);
-        }, 3000);
+        // Check if we have recent cached data (within 10 minutes)
+        const cachedData = localStorage.getItem('stories');
+        const cacheTimestamp = localStorage.getItem('stories_timestamp');
+        const now = Date.now();
         
-        // Try to fetch from backend
-        const response = await fetch(`${API_BASE}/stories`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          // Add timeout to prevent hanging
-          signal: AbortSignal.timeout(5000)
-        });
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Backend data received:', data.length, 'stories');
-          
-          if (data && data.length > 0) {
-            const formattedStories: Story[] = data.map((story: any, index: number) => {
-              // Handle image URL properly
-              let coverImage = story.thumbnail || "/assets/portrait/1p.jpg";
-              
-              // Handle base64 images (from admin uploads)
-              if (coverImage && coverImage.startsWith('data:')) {
-                // Keep base64 as is
-              } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
-                coverImage = `https://velvetwords-backend.vercel.app${coverImage}`;
-              }
-              
-              return {
+        if (cachedData && cacheTimestamp) {
+          const cacheAge = now - parseInt(cacheTimestamp);
+          if (cacheAge < 10 * 60 * 1000) { // 10 minutes
+            console.log('Using cached stories to save bandwidth');
+            const localStories = JSON.parse(cachedData);
+            if (localStories.length > 0) {
+              const formattedStories: Story[] = localStories.map((story: any, index: number) => ({
                 id: story._id || story.id,
                 categoryId: story.category || "cat-1",
                 title: story.title?.en || story.title || "Untitled",
                 author: story.author || "Unknown Author",
                 description: story.description?.en || story.description || "No description available",
-                coverImage,
+                coverImage: story.thumbnail || "/assets/portrait/1p.jpg",
                 rating: story.rating || 4.5,
                 reviewCount: story.reviewCount || 100,
                 totalChapters: story.totalChapters || 1,
                 genre: story.category || "Romance",
-                isTrending: story.isTrending || index < 3,
+                isTrending: index < 3,
                 createdAt: story.createdAt || new Date().toISOString()
-              };
-            });
-            
-            console.log('Formatted stories:', formattedStories.length);
-            setStories(formattedStories);
-            localStorage.setItem('stories', JSON.stringify(data));
-            setLoading(false);
-            return;
+              }));
+              setStories(formattedStories);
+              setLoading(false);
+              return;
+            }
           }
         }
         
-        // If backend fails or returns empty, use localStorage immediately
-        const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
-        if (localStories.length > 0) {
-          const formattedStories: Story[] = localStories.map((story: any, index: number) => {
-            let coverImage = story.coverImage || story.thumbnail || "/assets/portrait/1p.jpg";
-            
-            if (coverImage && coverImage.startsWith('data:')) {
-              // Keep base64 as is
-            } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
-              coverImage = `https://velvetwords-backend.vercel.app${coverImage}`;
-            }
-            
-            return {
+        // Only fetch from backend if cache is old or empty
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+          console.log('Request timeout, using cached data');
+        }, 2000); // Reduced to 2 seconds
+        
+        const response = await fetch(`${API_BASE}/stories`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            const formattedStories: Story[] = data.map((story: any, index: number) => ({
               id: story._id || story.id,
               categoryId: story.category || "cat-1",
               title: story.title?.en || story.title || "Untitled",
               author: story.author || "Unknown Author",
               description: story.description?.en || story.description || "No description available",
-              coverImage,
+              coverImage: story.thumbnail || "/assets/portrait/1p.jpg",
               rating: story.rating || 4.5,
               reviewCount: story.reviewCount || 100,
               totalChapters: story.totalChapters || 1,
               genre: story.category || "Romance",
-              isTrending: index < 3,
+              isTrending: story.isTrending || index < 3,
               createdAt: story.createdAt || new Date().toISOString()
-            };
-          });
-          setStories(formattedStories);
+            }));
+            
+            setStories(formattedStories);
+            localStorage.setItem('stories', JSON.stringify(data));
+            localStorage.setItem('stories_timestamp', now.toString());
+          }
         }
         
       } catch (error) {
         console.error("Failed to fetch stories:", error);
-        // Use localStorage as fallback
+        // Always fallback to localStorage
         const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
         if (localStories.length > 0) {
           const formattedStories: Story[] = localStories.map((story: any, index: number) => ({

@@ -31,27 +31,38 @@ export async function getTrendingStories(lang = 'en') {
 
 export async function getStoriesByCategory(category = null, lang = 'en') {
   try {
-    // Try backend first with timeout
+    // Use aggressive caching to reduce Vercel bandwidth
+    const cacheKey = `stories_${category || 'all'}_${lang}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+    const now = Date.now();
+    
+    // Use cache if less than 15 minutes old
+    if (cachedData && cacheTimestamp) {
+      const cacheAge = now - parseInt(cacheTimestamp);
+      if (cacheAge < 15 * 60 * 1000) { // 15 minutes
+        console.log('Using cached category data to save bandwidth');
+        return JSON.parse(cachedData);
+      }
+    }
+    
+    // Only fetch if cache is old
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    
     let url = `${API_BASE}/stories?lang=${lang}`;
     if (category) url += `&category=${category}`;
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
     
     try {
       const response = await fetch(url, {
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
       clearTimeout(timeoutId);
       
       if (response.ok) {
         const backendStories = await response.json();
-        console.log('Backend stories loaded:', backendStories.length);
-        
-        return backendStories.map(story => ({
+        const formattedStories = backendStories.map(story => ({
           id: story.id || story._id,
           title: story.title,
           author: story.author,
@@ -60,29 +71,20 @@ export async function getStoriesByCategory(category = null, lang = 'en') {
           totalChapters: story.totalChapters || 1,
           coverImage: story.thumbnail || '/assets/portrait/1p.jpg'
         }));
+        
+        // Cache the result
+        localStorage.setItem(cacheKey, JSON.stringify(formattedStories));
+        localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
+        return formattedStories;
       }
     } catch (error) {
       clearTimeout(timeoutId);
-      console.warn('Backend fetch failed, using localStorage');
     }
     
-    // Fallback to localStorage immediately
-    const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
-    if (localStories.length > 0) {
-      const formattedStories = localStories.map(localStory => ({
-        id: localStory._id || localStory.id,
-        title: localStory.title?.en || localStory.title,
-        author: localStory.author,
-        description: localStory.description?.en || localStory.description,
-        category: localStory.category,
-        totalChapters: localStory.totalChapters || 1,
-        coverImage: localStory.thumbnail || '/assets/portrait/1p.jpg'
-      }));
-      
-      // Filter by category if specified
-      return category 
-        ? formattedStories.filter(story => story.category === category)
-        : formattedStories;
+    // Fallback to any cached data (even if old)
+    if (cachedData) {
+      console.log('Using old cached data as fallback');
+      return JSON.parse(cachedData);
     }
     
     return [];

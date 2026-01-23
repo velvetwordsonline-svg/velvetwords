@@ -182,8 +182,12 @@ export default function Index() {
 
   // Use trending stories from API, fallback to local stories
   const displayTrendingStories = trendingStories.length > 0 ? trendingStories.slice(0, 5) : stories.slice(0, 5);
-  const newArrivals = stories.slice(0, 8).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const spotlightItems = stories.slice(0, 3).map((story) => ({
+  
+  // Duplicate stories to fill sections if we have fewer stories
+  const allAvailableStories = stories.length > 0 ? [...stories, ...stories, ...stories].slice(0, 20) : [];
+  
+  const newArrivals = allAvailableStories.slice(0, 8).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const spotlightItems = allAvailableStories.slice(0, 3).map((story) => ({
     id: story.id,
     image: story.coverImage,
     title: story.title,
@@ -195,8 +199,8 @@ export default function Index() {
     isNew: Math.random() > 0.7,
   }));
 
-  const upcomingReleases = stories.length > 10 ? stories.slice(10, 20).map((story) => ({
-    id: story.id,
+  const upcomingReleases = allAvailableStories.length > 0 ? allAvailableStories.slice(0, 10).map((story, index) => ({
+    id: story.id + '-upcoming-' + index,
     image: story.coverImage,
     title: story.title,
     category: story.genre,

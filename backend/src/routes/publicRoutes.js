@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const { Story, Chapter } = require('../models/models');
+const { Story, Chapter } = require('../models/persistentModels');
 const { checkSubscriptionAccess } = require('../middleware/subscriptionMiddleware');
 
 const router = express.Router();
@@ -279,8 +279,6 @@ router.get('/trending', async (req, res) => {
 // SIMPLE DELETE ROUTE FOR ADMIN (NO AUTH)
 router.delete('/delete-story/:id', async (req, res) => {
   try {
-    const { Story, Chapter } = require('../models/models');
-    
     // Hard delete from database
     await Chapter.deleteMany({ storyId: req.params.id });
     await Story.findByIdAndDelete(req.params.id);

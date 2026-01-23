@@ -1,5 +1,5 @@
 import { Heart, BookOpen, Zap } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
@@ -12,6 +12,7 @@ import UpcomingReleases from "@/components/UpcomingReleases";
 import Carousel from "@/components/Carousel";
 import { useApp } from "@/contexts/AppContext";
 import { categories } from "@/lib/mockData";
+import { getTrendingStories } from "@/lib/api";
 
 const featuredCharacters = [
   {
@@ -139,6 +140,26 @@ export default function Index() {
   const { stories, loading } = useApp();
   const [showAllCharacters, setShowAllCharacters] = useState(false);
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
+  const [trendingStories, setTrendingStories] = useState<any[]>([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
+
+  // Fetch trending stories
+  useEffect(() => {
+    const fetchTrending = async () => {
+      setTrendingLoading(true);
+      try {
+        const trending = await getTrendingStories();
+        console.log('Fetched trending stories:', trending);
+        setTrendingStories(trending);
+      } catch (error) {
+        console.error('Failed to fetch trending stories:', error);
+      } finally {
+        setTrendingLoading(false);
+      }
+    };
+    
+    fetchTrending();
+  }, []);
 
   // Show loading state with faster timeout
   if (loading) {
@@ -159,9 +180,8 @@ export default function Index() {
     ? filteredCharacters
     : filteredCharacters.slice(0, 4);
 
-  const trendingStories = stories.slice(0, 5).sort(() => Math.random() - 0.5);
-  // Use random 5 stories for trending section (reduced for performance)
-  const displayTrendingStories = trendingStories;
+  // Use trending stories from API, fallback to local stories
+  const displayTrendingStories = trendingStories.length > 0 ? trendingStories.slice(0, 5) : stories.slice(0, 5);
   const newArrivals = stories.slice(0, 8).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const spotlightItems = stories.slice(0, 3).map((story) => ({
     id: story.id,

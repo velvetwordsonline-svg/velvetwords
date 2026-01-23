@@ -1,5 +1,19 @@
 const API_BASE = 'https://velvetwords-backend.vercel.app/api';
 
+export async function getTrendingStories(lang = 'en') {
+  try {
+    const response = await fetch(`${API_BASE}/trending?lang=${lang}`);
+    if (response.ok) {
+      const result = await response.json();
+      return result.data || [];
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching trending stories:', error);
+    return [];
+  }
+}
+
 export async function getStoriesByCategory(category = null, lang = 'en') {
   try {
     // Always fetch fresh data from backend first

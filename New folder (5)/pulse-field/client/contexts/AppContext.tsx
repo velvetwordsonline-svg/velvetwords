@@ -40,11 +40,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }, 5000);
         
         // Always fetch from backend to get latest data including deletions
-        const response = await fetch(`${API_BASE}/stories`);
+        const response = await fetch(`${API_BASE}/api/stories`);
         clearTimeout(timeoutId);
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Backend data received:', data.length, 'stories');
+          
           const formattedStories: Story[] = data.map((story: any, index: number) => {
             // Handle image URL properly
             let coverImage = story.thumbnail || "/assets/portrait/1p.jpg";
@@ -57,20 +59,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
             
             return {
-              id: story.id,
+              id: story._id || story.id,
               categoryId: story.category || "cat-1",
-              title: story.title,
-              author: story.author,
-              description: story.description,
+              title: story.title?.en || story.title || "Untitled",
+              author: story.author || "Unknown Author",
+              description: story.description?.en || story.description || "No description available",
               coverImage,
               rating: story.rating || 4.5,
               reviewCount: story.reviewCount || 100,
-              totalChapters: story.totalChapters,
+              totalChapters: story.totalChapters || 1,
               genre: story.category || "Romance",
-              isTrending: index < 3,
-              createdAt: story.createdAt
+              isTrending: story.isTrending || index < 3,
+              createdAt: story.createdAt || new Date().toISOString()
             };
           });
+          
+          console.log('Formatted stories:', formattedStories.length);
           setStories(formattedStories);
           // Update localStorage with latest data including thumbnails
           const storiesForStorage = data.map(story => ({
@@ -117,53 +121,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error("Failed to fetch stories:", error);
-        // Use mock data as fallback on error
-        const mockStories: Story[] = [
-          {
-            id: "story-1",
-            categoryId: "slow-emotional",
-            title: "The Silence We Didn't Break",
-            author: "Slow & Emotional",
-            description: "Two men, parallel yet close, navigate unspoken desire in a high-tech world, finding connection through silence, code, and subtle intimacy.",
-            coverImage: "/assets/portrait/1p.jpg",
-            rating: 4.5,
-            reviewCount: 156,
-            totalChapters: 4,
-            genre: "slow-emotional",
-            isTrending: true,
-            createdAt: "2024-01-15T10:00:00Z"
-          },
-          {
-            id: "story-2",
-            categoryId: "city-travel",
-            title: "Two Nights Before Goodbye",
-            author: "City Travel & Temporary Love",
-            description: "A fleeting, intense romance blooms between a wandering travel blogger and a disciplined army officer.",
-            coverImage: "/assets/portrait/2p.jpg",
-            rating: 4.7,
-            reviewCount: 203,
-            totalChapters: 5,
-            genre: "city-travel",
-            isTrending: true,
-            createdAt: "2024-01-16T10:00:00Z"
-          },
-          {
-            id: "story-3",
-            categoryId: "forbidden-risky",
-            title: "When Desire Learned Patience",
-            author: "Forbidden & Risky Desire",
-            description: "A widowed professor and his brilliant young student navigate desire, patience, and societal judgment.",
-            coverImage: "/assets/portrait/3p.jpg",
-            rating: 4.8,
-            reviewCount: 289,
-            totalChapters: 6,
-            genre: "forbidden-risky",
-            isTrending: true,
-            createdAt: "2024-01-17T10:00:00Z"
-          }
-        ];
-        console.log('Setting mock stories:', mockStories);
-        setStories(mockStories);
       } finally {
         setLoading(false);
       }
@@ -310,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Fetch chapters for a specific story
   const fetchChaptersForStory = async (storyId: string) => {
     try {
-      const response = await fetch(`${API_BASE}/stories/${storyId}/chapters`);
+      const response = await fetch(`${API_BASE}/api/stories/${storyId}/chapters`);
       if (response.ok) {
         const data = await response.json();
         const formattedChapters: Chapter[] = data.map((chapter: any) => ({

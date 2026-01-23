@@ -117,6 +117,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error("Failed to fetch stories:", error);
+        // Use mock data as fallback on error
+        const mockStories: Story[] = [
+          {
+            id: "story-1",
+            categoryId: "slow-emotional",
+            title: "The Silence We Didn't Break",
+            author: "Slow & Emotional",
+            description: "Two men, parallel yet close, navigate unspoken desire in a high-tech world, finding connection through silence, code, and subtle intimacy.",
+            coverImage: "/assets/portrait/1p.jpg",
+            rating: 4.5,
+            reviewCount: 156,
+            totalChapters: 4,
+            genre: "slow-emotional",
+            isTrending: true,
+            createdAt: "2024-01-15T10:00:00Z"
+          },
+          {
+            id: "story-2",
+            categoryId: "city-travel",
+            title: "Two Nights Before Goodbye",
+            author: "City Travel & Temporary Love",
+            description: "A fleeting, intense romance blooms between a wandering travel blogger and a disciplined army officer.",
+            coverImage: "/assets/portrait/2p.jpg",
+            rating: 4.7,
+            reviewCount: 203,
+            totalChapters: 5,
+            genre: "city-travel",
+            isTrending: true,
+            createdAt: "2024-01-16T10:00:00Z"
+          },
+          {
+            id: "story-3",
+            categoryId: "forbidden-risky",
+            title: "When Desire Learned Patience",
+            author: "Forbidden & Risky Desire",
+            description: "A widowed professor and his brilliant young student navigate desire, patience, and societal judgment.",
+            coverImage: "/assets/portrait/3p.jpg",
+            rating: 4.8,
+            reviewCount: 289,
+            totalChapters: 6,
+            genre: "forbidden-risky",
+            isTrending: true,
+            createdAt: "2024-01-17T10:00:00Z"
+          }
+        ];
+        console.log('Setting mock stories:', mockStories);
+        setStories(mockStories);
       } finally {
         setLoading(false);
       }

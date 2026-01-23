@@ -112,8 +112,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     fetchStories();
     
-    // Set up periodic sync every 30 seconds to catch admin deletions
-    const syncInterval = setInterval(fetchStories, 30000);
+    // Set up periodic sync every 60 seconds to improve performance
+    const syncInterval = setInterval(fetchStories, 60000);
     
     // Listen for localStorage changes
     const handleStorageChange = (e: StorageEvent) => {

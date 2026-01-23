@@ -140,11 +140,14 @@ export default function Index() {
   const [showAllCharacters, setShowAllCharacters] = useState(false);
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
 
-  // Show loading state
+  // Show loading state with faster timeout
   if (loading) {
     return (
       <div className="bg-black min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-white text-sm">Loading stories...</p>
+        </div>
       </div>
     );
   }
@@ -156,10 +159,10 @@ export default function Index() {
     ? filteredCharacters
     : filteredCharacters.slice(0, 4);
 
-  const trendingStories = stories.slice(0, 7).sort(() => Math.random() - 0.5);
-  // Use random 7 stories for trending section
+  const trendingStories = stories.slice(0, 5).sort(() => Math.random() - 0.5);
+  // Use random 5 stories for trending section (reduced for performance)
   const displayTrendingStories = trendingStories;
-  const newArrivals = stories.slice(0, 12).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const newArrivals = stories.slice(0, 8).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const spotlightItems = stories.slice(0, 3).map((story) => ({
     id: story.id,
     image: story.coverImage,

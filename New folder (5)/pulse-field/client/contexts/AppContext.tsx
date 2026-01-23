@@ -33,8 +33,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchStories = async () => {
       try {
+        // Set timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+          console.log('Loading timeout, using fallback data');
+          setLoading(false);
+        }, 5000);
+        
         // Always fetch from backend to get latest data including deletions
         const response = await fetch(`${API_BASE}/stories`);
+        clearTimeout(timeoutId);
+        
         if (response.ok) {
           const data = await response.json();
           const formattedStories: Story[] = data.map((story: any, index: number) => {
@@ -101,6 +109,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
               };
             });
             setStories(formattedStories);
+          } else {
+            // Use mock data as final fallback
+            console.log('Using mock data fallback');
+            setStories([]);
           }
         }
       } catch (error) {

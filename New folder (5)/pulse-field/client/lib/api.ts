@@ -31,20 +31,27 @@ export async function getTrendingStories(lang = 'en') {
 
 export async function getStoriesByCategory(category = null, lang = 'en') {
   try {
-    // Always fetch fresh data from backend first
+    // Try backend first with timeout
     let url = `${API_BASE}/stories?lang=${lang}`;
     if (category) url += `&category=${category}`;
     
-    let stories = [];
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
     
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const backendStories = await response.json();
-        console.log('Backend stories with thumbnails:', backendStories);
+        console.log('Backend stories loaded:', backendStories.length);
         
-        // Format backend stories properly
-        stories = backendStories.map(story => ({
+        return backendStories.map(story => ({
           id: story.id || story._id,
           title: story.title,
           author: story.author,
@@ -55,41 +62,30 @@ export async function getStoriesByCategory(category = null, lang = 'en') {
         }));
       }
     } catch (error) {
+      clearTimeout(timeoutId);
       console.warn('Backend fetch failed, using localStorage');
     }
     
-    // Also get from localStorage (for admin uploaded stories)
+    // Fallback to localStorage immediately
     const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
-    console.log('Raw localStorage stories:', localStories);
+    if (localStories.length > 0) {
+      const formattedStories = localStories.map(localStory => ({
+        id: localStory._id || localStory.id,
+        title: localStory.title?.en || localStory.title,
+        author: localStory.author,
+        description: localStory.description?.en || localStory.description,
+        category: localStory.category,
+        totalChapters: localStory.totalChapters || 1,
+        coverImage: localStory.thumbnail || '/assets/portrait/1p.jpg'
+      }));
+      
+      // Filter by category if specified
+      return category 
+        ? formattedStories.filter(story => story.category === category)
+        : formattedStories;
+    }
     
-    // Merge and deduplicate stories
-    const allStories = [...stories];
-    
-    localStories.forEach(localStory => {
-      if (!allStories.find(s => s.id === localStory.id || s._id === localStory._id)) {
-        console.log('Processing local story:', localStory.title, 'thumbnail:', localStory.thumbnail);
-        
-        // Format local story to match expected structure
-        const formattedStory = {
-          id: localStory._id || localStory.id,
-          title: localStory.title?.en || localStory.title,
-          author: localStory.author,
-          description: localStory.description?.en || localStory.description,
-          category: localStory.category,
-          totalChapters: localStory.totalChapters || 1,
-          coverImage: localStory.thumbnail || '/assets/portrait/1p.jpg'
-        };
-        console.log('Final coverImage:', formattedStory.coverImage);
-        allStories.push(formattedStory);
-      }
-    });
-    
-    // Filter by category if specified
-    const filteredStories = category 
-      ? allStories.filter(story => story.category === category)
-      : allStories;
-    
-    return filteredStories;
+    return [];
   } catch (error) {
     console.error('Error:', error);
     return [];

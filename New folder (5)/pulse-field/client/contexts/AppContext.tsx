@@ -29,29 +29,73 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [chapters, setChapters] = useState<{ [key: string]: Chapter[] }>({});
   const [loading, setLoading] = useState(true);
 
-  // Fetch stories from localStorage first, then backend as fallback
+  // Fetch stories from backend with better error handling and faster loading
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        // Set timeout to prevent infinite loading
+        // Reduce timeout to 3 seconds for faster fallback
         const timeoutId = setTimeout(() => {
           console.log('Loading timeout, using fallback data');
           setLoading(false);
-        }, 5000);
+        }, 3000);
         
-        // Always fetch from backend to get latest data including deletions
-        const response = await fetch(`${API_BASE}/stories`);
+        // Try to fetch from backend
+        const response = await fetch(`${API_BASE}/stories`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Add timeout to prevent hanging
+          signal: AbortSignal.timeout(5000)
+        });
         clearTimeout(timeoutId);
         
         if (response.ok) {
           const data = await response.json();
           console.log('Backend data received:', data.length, 'stories');
           
-          const formattedStories: Story[] = data.map((story: any, index: number) => {
-            // Handle image URL properly
-            let coverImage = story.thumbnail || "/assets/portrait/1p.jpg";
+          if (data && data.length > 0) {
+            const formattedStories: Story[] = data.map((story: any, index: number) => {
+              // Handle image URL properly
+              let coverImage = story.thumbnail || "/assets/portrait/1p.jpg";
+              
+              // Handle base64 images (from admin uploads)
+              if (coverImage && coverImage.startsWith('data:')) {
+                // Keep base64 as is
+              } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
+                coverImage = `https://velvetwords-backend.vercel.app${coverImage}`;
+              }
+              
+              return {
+                id: story._id || story.id,
+                categoryId: story.category || "cat-1",
+                title: story.title?.en || story.title || "Untitled",
+                author: story.author || "Unknown Author",
+                description: story.description?.en || story.description || "No description available",
+                coverImage,
+                rating: story.rating || 4.5,
+                reviewCount: story.reviewCount || 100,
+                totalChapters: story.totalChapters || 1,
+                genre: story.category || "Romance",
+                isTrending: story.isTrending || index < 3,
+                createdAt: story.createdAt || new Date().toISOString()
+              };
+            });
             
-            // Handle base64 images (from admin uploads)
+            console.log('Formatted stories:', formattedStories.length);
+            setStories(formattedStories);
+            localStorage.setItem('stories', JSON.stringify(data));
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // If backend fails or returns empty, use localStorage immediately
+        const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
+        if (localStories.length > 0) {
+          const formattedStories: Story[] = localStories.map((story: any, index: number) => {
+            let coverImage = story.coverImage || story.thumbnail || "/assets/portrait/1p.jpg";
+            
             if (coverImage && coverImage.startsWith('data:')) {
               // Keep base64 as is
             } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
@@ -69,82 +113,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
               reviewCount: story.reviewCount || 100,
               totalChapters: story.totalChapters || 1,
               genre: story.category || "Romance",
-              isTrending: story.isTrending || index < 3,
+              isTrending: index < 3,
               createdAt: story.createdAt || new Date().toISOString()
             };
           });
-          
-          console.log('Formatted stories:', formattedStories.length);
           setStories(formattedStories);
-          // Update localStorage with latest data including thumbnails
-          const storiesForStorage = data.map(story => ({
-            ...story,
-            thumbnail: story.thumbnail // Ensure thumbnail is preserved
-          }));
-          localStorage.setItem('stories', JSON.stringify(storiesForStorage));
-        } else {
-          // Fallback to localStorage if backend fails
-          const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
-          if (localStories.length > 0) {
-            const formattedStories: Story[] = localStories.map((story: any, index: number) => {
-              // Handle image URL - ensure it has the full backend URL
-              let coverImage = story.coverImage || story.thumbnail || "/assets/portrait/1p.jpg";
-              
-              // Handle base64 images (from admin uploads)
-              if (coverImage && coverImage.startsWith('data:')) {
-                // Keep base64 as is
-              } else if (coverImage && !coverImage.startsWith('http') && !coverImage.startsWith('/assets')) {
-                coverImage = `https://velvetwords-backend.vercel.app${coverImage}`;
-              }
-              
-              return {
-                id: story.id,
-                categoryId: story.category || "cat-1",
-                title: story.title,
-                author: story.author,
-                description: story.description,
-                coverImage,
-                rating: story.rating || 4.5,
-                reviewCount: story.reviewCount || 100,
-                totalChapters: story.totalChapters || 1,
-                genre: story.category || "Romance",
-                isTrending: index < 3,
-                createdAt: story.createdAt || new Date().toISOString()
-              };
-            });
-            setStories(formattedStories);
-          } else {
-            // Use mock data as final fallback
-            console.log('Using mock data fallback');
-            setStories([]);
-          }
         }
+        
       } catch (error) {
         console.error("Failed to fetch stories:", error);
+        // Use localStorage as fallback
+        const localStories = JSON.parse(localStorage.getItem('stories') || '[]');
+        if (localStories.length > 0) {
+          const formattedStories: Story[] = localStories.map((story: any, index: number) => ({
+            id: story._id || story.id,
+            categoryId: story.category || "cat-1",
+            title: story.title?.en || story.title || "Untitled",
+            author: story.author || "Unknown Author",
+            description: story.description?.en || story.description || "No description available",
+            coverImage: story.thumbnail || "/assets/portrait/1p.jpg",
+            rating: story.rating || 4.5,
+            reviewCount: story.reviewCount || 100,
+            totalChapters: story.totalChapters || 1,
+            genre: story.category || "Romance",
+            isTrending: index < 3,
+            createdAt: story.createdAt || new Date().toISOString()
+          }));
+          setStories(formattedStories);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchStories();
-    
-    // Set up periodic sync every 60 seconds to improve performance
-    const syncInterval = setInterval(fetchStories, 60000);
-    
-    // Listen for localStorage changes
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'stories') {
-        console.log('Stories updated in AppContext, reloading...');
-        fetchStories();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      clearInterval(syncInterval);
-      window.removeEventListener('storage', handleStorageChange);
-    };
   }, []);
 
   // Load user from localStorage on mount

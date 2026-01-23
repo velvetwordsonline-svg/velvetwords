@@ -40,7 +40,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }, 5000);
         
         // Always fetch from backend to get latest data including deletions
-        const response = await fetch(`${API_BASE}/api/stories`);
+        const response = await fetch(`${API_BASE}/stories`);
         clearTimeout(timeoutId);
         
         if (response.ok) {
@@ -267,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Fetch chapters for a specific story
   const fetchChaptersForStory = async (storyId: string) => {
     try {
-      const response = await fetch(`${API_BASE}/api/stories/${storyId}/chapters`);
+      const response = await fetch(`${API_BASE}/stories/${storyId}/chapters`);
       if (response.ok) {
         const data = await response.json();
         const formattedChapters: Chapter[] = data.map((chapter: any) => ({

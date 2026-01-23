@@ -5,7 +5,22 @@ export async function getTrendingStories(lang = 'en') {
     const response = await fetch(`${API_BASE}/trending?lang=${lang}`);
     if (response.ok) {
       const result = await response.json();
-      return result.data || [];
+      const stories = result.data || [];
+      
+      // Format stories to match expected structure
+      return stories.map(story => ({
+        id: story._id || story.id,
+        title: story.title,
+        author: story.author,
+        description: story.description || 'No description available',
+        coverImage: story.thumbnail || '/assets/portrait/1p.jpg',
+        genre: story.category || 'Romance',
+        rating: story.rating || 4.5,
+        reviewCount: story.reviewCount || 100,
+        totalChapters: story.totalChapters || 1,
+        isTrending: story.isTrending || true,
+        createdAt: story.createdAt || new Date().toISOString()
+      }));
     }
     return [];
   } catch (error) {

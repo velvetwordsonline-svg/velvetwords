@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd 'New folder (5)/pulse-field' && npm run build:client",
-  "outputDirectory": "New folder (5)/pulse-field/dist",
   "routes": [
     {
       "handle": "filesystem"

@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Zap, Search, Menu, X } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
 
 export default function Navigation() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { user } = useApp();
+  
+  const hasActiveSubscription = user?.subscription?.isActive && 
+    user?.subscription?.expiresAt && 
+    new Date(user.subscription.expiresAt) > new Date();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +34,9 @@ export default function Navigation() {
             <span className="hidden sm:inline text-lg font-bold text-white tracking-wide">
               Velvet Words
             </span>
-            <span className="sm:hidden text-lg font-bold text-white">VW</span>
+            <span className="sm:hidden text-sm font-bold text-white tracking-wide">
+              Velvet Words
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -39,12 +47,14 @@ export default function Navigation() {
             >
               Home
             </Link>
-            <Link
-              to="/library"
-              className="text-white hover:text-primary transition-colors font-medium text-sm"
-            >
-              Library
-            </Link>
+            {hasActiveSubscription && (
+              <Link
+                to="/library"
+                className="text-white hover:text-primary transition-colors font-medium text-sm"
+              >
+                Library
+              </Link>
+            )}
             <Link
               to="/categories"
               className="text-white hover:text-primary transition-colors font-medium text-sm"
@@ -78,11 +88,9 @@ export default function Navigation() {
           <div className="hidden md:flex items-center gap-4">
             <Link
               to="/account"
-              className="flex items-center gap-2 text-white hover:text-primary transition-colors"
+              className="text-white hover:text-primary transition-colors font-medium text-sm"
             >
-              <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
-                <span className="text-primary font-bold text-sm">A</span>
-              </div>
+              My Account
             </Link>
           </div>
 
@@ -119,13 +127,15 @@ export default function Navigation() {
               >
                 Home
               </Link>
-              <Link
-                to="/library"
-                className="block px-4 py-2 text-white hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Library
-              </Link>
+              {hasActiveSubscription && (
+                <Link
+                  to="/library"
+                  className="block px-4 py-2 text-white hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Library
+                </Link>
+              )}
               <Link
                 to="/categories"
                 className="block px-4 py-2 text-white hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
@@ -138,7 +148,7 @@ export default function Navigation() {
                 className="block px-4 py-2 text-white hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Account
+                My Account
               </Link>
             </div>
           </div>

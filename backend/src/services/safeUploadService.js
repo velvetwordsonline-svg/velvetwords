@@ -5,23 +5,23 @@ const translator = require('./translator');
 
 class SafeUploadService {
   
-  // TRANSACTION-SAFE STORY UPLOAD
+  // TRANSACTION-SAFE STORY UPLOAD (OPTIMIZED)
   static async uploadStory(storyData, docxBuffer, adminId) {
     const session = await mongoose.startSession();
     
     try {
       session.startTransaction();
       
-      console.log('🔄 Starting safe story upload...');
+      console.log('🔄 Starting optimized story upload...');
       
-      // 1. CREATE STORY RECORD (PERSISTENT)
+      // 1. CREATE STORY RECORD (MINIMAL DATA)
       const story = new Story({
-        title: { en: storyData.title },
-        author: storyData.author,
-        description: { en: storyData.description },
+        title: { en: storyData.title.trim() },
+        author: storyData.author.trim(),
+        description: { en: storyData.description.trim() },
         category: storyData.category,
         thumbnail: storyData.thumbnailPath,
-        status: 'draft',
+        status: 'processing', // Changed from draft
         uploadedAt: new Date(),
         isDeleted: false
       });
@@ -29,75 +29,97 @@ class SafeUploadService {
       await story.save({ session });
       console.log(`✅ Story created: ${story._id}`);
       
-      // 2. PARSE DOCX SAFELY FROM BUFFER
-      const chapters = await docxParser.parseDocxBuffer(docxBuffer);
-      console.log(`📖 Parsed ${chapters.length} chapters`);
-      
-      // 3. SAVE CHAPTERS (TRANSACTION-SAFE)
-      const savedChapters = [];
-      
-      for (let i = 0; i < chapters.length; i++) {
-        try {
-          const translatedChapter = await translator.translateChapter(chapters[i]);
-          
-          const chapter = new Chapter({
-            storyId: story._id,
-            chapterNumber: i + 1,
-            title: translatedChapter.title,
-            content: translatedChapter.content,
-            estimatedReadTime: this.calculateReadTime(translatedChapter.content.en),
-            isDeleted: false
-          });
-          
-          await chapter.save({ session });
-          savedChapters.push(chapter);
-          
-          console.log(`✅ Chapter ${i + 1} saved: ${chapter._id}`);
-          
-          if (i < chapters.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-          
-        } catch (chapterError) {
-          console.error(`❌ Chapter ${i + 1} failed:`, chapterError.message);
-        }
-      }
-      
-      // 4. UPDATE STORY WITH FINAL DATA
-      story.totalChapters = savedChapters.length;
-      story.status = 'published';
-      story.lastModified = new Date();
-      
-      // Simplified - skip translation for now
-      story.title.hi = storyData.title;
-      story.title.hinglish = storyData.title;
-      story.description.hi = storyData.description;
-      story.description.hinglish = storyData.description;
-      
-      await story.save({ session });
-      
-      // 5. LOG ADMIN ACTION
-      await this.logAdminAction(adminId, 'upload', story._id, session);
-      
-      // 6. COMMIT TRANSACTION
+      // 2. COMMIT STORY FIRST (MAKES IT VISIBLE IMMEDIATELY)
       await session.commitTransaction();
       
-      console.log(`🎉 Story upload completed: ${story._id}`);
-      console.log(`📊 Total chapters: ${savedChapters.length}`);
+      // 3. PROCESS CHAPTERS ASYNCHRONOUSLY (NON-BLOCKING)
+      setImmediate(async () => {
+        try {
+          await this.processChaptersAsync(story._id, docxBuffer, adminId);
+        } catch (error) {
+          console.error('Async chapter processing failed:', error);
+        }
+      });
       
       return {
         success: true,
         storyId: story._id,
-        totalChapters: savedChapters.length,
-        message: 'Story uploaded and will persist permanently'
+        message: 'Story uploaded, chapters processing in background'
       };
       
     } catch (error) {
       await session.abortTransaction();
-      console.error('❌ Upload failed, rolling back:', error);
+      console.error('❌ Upload failed:', error);
       throw new Error(`Upload failed: ${error.message}`);
     } finally {
       session.endSession();
+    }
+  }
+  
+  // ASYNC CHAPTER PROCESSING (NON-BLOCKING)
+  static async processChaptersAsync(storyId, docxBuffer, adminId) {
+    try {
+      console.log(`🔄 Processing chapters for story: ${storyId}`);
+      
+      // Parse chapters
+      const chapters = await docxParser.parseDocxBuffer(docxBuffer);
+      console.log(`📖 Parsed ${chapters.length} chapters`);
+      
+      const savedChapters = [];
+      
+      // Process chapters in batches to avoid memory issues
+      const batchSize = 3;
+      for (let i = 0; i < chapters.length; i += batchSize) {
+        const batch = chapters.slice(i, i + batchSize);
+        
+        for (let j = 0; j < batch.length; j++) {
+          const chapterIndex = i + j;
+          try {
+            const translatedChapter = await translator.translateChapter(batch[j]);
+            
+            const chapter = new Chapter({
+              storyId,
+              chapterNumber: chapterIndex + 1,
+              title: translatedChapter.title,
+              content: translatedChapter.content,
+              estimatedReadTime: this.calculateReadTime(translatedChapter.content.en),
+              isDeleted: false
+            });
+            
+            await chapter.save();
+            savedChapters.push(chapter);
+            
+            console.log(`✅ Chapter ${chapterIndex + 1} saved`);
+            
+          } catch (chapterError) {
+            console.error(`❌ Chapter ${chapterIndex + 1} failed:`, chapterError.message);
+          }
+        }
+        
+        // Small delay between batches
+        if (i + batchSize < chapters.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      // Update story with final data
+      await Story.findByIdAndUpdate(storyId, {
+        totalChapters: savedChapters.length,
+        status: 'published',
+        lastModified: new Date()
+      });
+      
+      await this.logAdminAction(adminId, 'upload', storyId);
+      
+      console.log(`🎉 Story processing completed: ${storyId}`);
+      
+    } catch (error) {
+      console.error('❌ Async processing failed:', error);
+      // Mark story as failed
+      await Story.findByIdAndUpdate(storyId, {
+        status: 'failed',
+        lastModified: new Date()
+      });
     }
   }
   
@@ -164,11 +186,14 @@ class SafeUploadService {
   
   // UTILITY METHODS
   static calculateReadTime(content) {
-    const textBlocks = content.filter(block => block.type === 'text');
+    if (!content || !Array.isArray(content)) return 5;
+    
+    const textBlocks = content.filter(block => block.type === 'text' && block.data);
     const wordCount = textBlocks.reduce((count, block) => {
-      return count + (block.content?.split(' ').length || 0);
+      return count + (block.data?.split(' ').length || 0);
     }, 0);
-    return Math.ceil(wordCount / 200);
+    
+    return Math.max(1, Math.ceil(wordCount / 200)); // Minimum 1 minute
   }
   
   static async logAdminAction(adminId, action, storyId, session = null) {

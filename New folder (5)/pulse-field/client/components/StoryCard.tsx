@@ -57,6 +57,10 @@ export default function StoryCard({
             className={`w-full h-full object-cover transition-transform duration-500 ${
               isHovered ? "scale-110" : "scale-100"
             }`}
+            onError={(e) => {
+              console.log('Image failed to load:', image);
+              e.currentTarget.src = '/assets/The-Silence-We-Didnt-Break.png';
+            }}
           />
 
           {/* Dark overlay */}

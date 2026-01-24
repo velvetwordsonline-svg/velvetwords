@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Bell } from "lucide-react";
+import { useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface UpcomingRelease {
   id: string;
@@ -16,7 +16,13 @@ interface UpcomingReleasesProps {
 
 export default function UpcomingReleases({ items }: UpcomingReleasesProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [notified, setNotified] = useState<Set<string>>(new Set());
+
+  // Generate random future dates
+  const generateRandomDate = () => {
+    const today = new Date();
+    const futureDate = new Date(today.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000); // Random date within next 90 days
+    return futureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
@@ -26,16 +32,6 @@ export default function UpcomingReleases({ items }: UpcomingReleasesProps) {
         behavior: "smooth",
       });
     }
-  };
-
-  const toggleNotification = (id: string) => {
-    const newNotified = new Set(notified);
-    if (newNotified.has(id)) {
-      newNotified.delete(id);
-    } else {
-      newNotified.add(id);
-    }
-    setNotified(newNotified);
   };
 
   return (
@@ -66,6 +62,9 @@ export default function UpcomingReleases({ items }: UpcomingReleasesProps) {
                         src={item.image}
                         alt={item.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/assets/The-Silence-We-Didnt-Break.png';
+                        }}
                       />
                     </div>
 
@@ -73,7 +72,7 @@ export default function UpcomingReleases({ items }: UpcomingReleasesProps) {
                     <div className="p-4 flex flex-col justify-between h-full">
                       <div className="flex-1">
                         <p className="text-secondary text-xs font-bold mb-2">
-                          {item.releaseDate}
+                          {generateRandomDate()}
                         </p>
                         <h3 className="text-base font-bold text-white mb-2 line-clamp-2">
                           {item.title}
@@ -85,19 +84,6 @@ export default function UpcomingReleases({ items }: UpcomingReleasesProps) {
                           {item.description}
                         </p>
                       </div>
-
-                      {/* Notify Button */}
-                      <button
-                        onClick={() => toggleNotification(item.id)}
-                        className={`mt-3 w-full py-2 px-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all border-2 ${
-                          notified.has(item.id)
-                            ? "bg-primary text-white border-primary"
-                            : "border-primary text-primary hover:bg-primary/10"
-                        }`}
-                      >
-                        <Bell className="w-4 h-4" />
-                        {notified.has(item.id) ? "Notified" : "Notify Me"}
-                      </button>
                     </div>
                   </div>
                 </div>

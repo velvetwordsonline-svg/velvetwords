@@ -1,47 +1,44 @@
 const mongoose = require('mongoose');
 
-// Story Schema - PERSISTENT, NO AUTO-DELETE
+// Story Schema - OPTIMIZED FOR PERFORMANCE
 const storySchema = new mongoose.Schema({
   title: {
-    en: { type: String, required: true },
-    hi: String,
-    hinglish: String
+    en: { type: String, required: true, index: true }
   },
-  author: { type: String, required: true },
+  author: { type: String, required: true, index: true },
   description: {
-    en: String,
-    hi: String,
-    hinglish: String
+    en: String
   },
-  category: String,
+  category: { type: String, index: true },
   thumbnail: String,
   totalChapters: { type: Number, default: 0 },
   status: { 
     type: String, 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'published' 
+    enum: ['processing', 'published', 'failed'], 
+    default: 'processing',
+    index: true
   },
   
-  // SOFT DELETE - NEVER AUTO-DELETE
-  isDeleted: { type: Boolean, default: false },
+  // SOFT DELETE
+  isDeleted: { type: Boolean, default: false, index: true },
   deletedAt: Date,
-  deletedBy: String, // Admin who deleted
+  deletedBy: String,
   
   // TRENDING
-  isTrending: { type: Boolean, default: false },
+  isTrending: { type: Boolean, default: false, index: true },
   trendingOrder: { type: Number, default: 0 },
   
-  // METADATA - PERSISTENT
+  // METADATA
   uploadedAt: { type: Date, default: Date.now },
   lastModified: { type: Date, default: Date.now },
-  rating: { type: Number, default: 0 },
+  rating: { type: Number, default: 4.5 },
   reviewCount: { type: Number, default: 0 }
 }, { 
-  timestamps: true
-  // NO TTL INDEX - STORIES NEVER EXPIRE
+  timestamps: true,
+  read: 'secondaryPreferred'
 });
 
-// Chapter Schema - LINKED TO STORY, PERSISTENT
+// Chapter Schema - OPTIMIZED
 const chapterSchema = new mongoose.Schema({
   storyId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -51,23 +48,18 @@ const chapterSchema = new mongoose.Schema({
   },
   chapterNumber: { type: Number, required: true },
   title: {
-    en: { type: String, required: true },
-    hi: String,
-    hinglish: String
+    en: { type: String, required: true }
   },
   content: {
-    en: [{ type: Object }],      // Array of ContentBlocks
-    hi: [{ type: Object }],
-    hinglish: [{ type: Object }]
+    en: [{ type: Object }] // Compressed content blocks
   },
-  estimatedReadTime: Number,
+  estimatedReadTime: { type: Number, default: 5 },
   
-  // SOFT DELETE - ONLY WHEN STORY IS DELETED
+  // SOFT DELETE
   isDeleted: { type: Boolean, default: false },
   deletedAt: Date
 }, { 
   timestamps: true
-  // NO TTL INDEX - CHAPTERS NEVER EXPIRE
 });
 
 // Admin Schema - FOR AUDIT TRAIL
@@ -96,10 +88,10 @@ const userSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-// INDEXES FOR PERFORMANCE (NO TTL)
-storySchema.index({ status: 1, isDeleted: 1 });
-storySchema.index({ category: 1, isDeleted: 1 });
-storySchema.index({ isTrending: 1, trendingOrder: 1 });
+// OPTIMIZED INDEXES
+storySchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
+storySchema.index({ category: 1, status: 1, isDeleted: 1 });
+storySchema.index({ isTrending: 1, status: 1, isDeleted: 1 });
 chapterSchema.index({ storyId: 1, chapterNumber: 1 });
 
 // EXPORT WITH SAFE MODEL CREATION

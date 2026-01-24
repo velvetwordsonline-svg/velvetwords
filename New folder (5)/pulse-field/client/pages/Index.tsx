@@ -11,130 +11,33 @@ import QuotesCarousel from "@/components/QuotesCarousel";
 import UpcomingReleases from "@/components/UpcomingReleases";
 import Carousel from "@/components/Carousel";
 import { useApp } from "@/contexts/AppContext";
-import { categories } from "@/lib/mockData";
-import { getTrendingStories } from "@/lib/api";
+import { getTrendingStories, getCategories } from "@/lib/api";
 
-const featuredCharacters = [
-  {
-    id: "1",
-    image: "/assets/characters/aarohi.png",
-    name: "Aarohi",
-    power: "Passionate",
-    description: "A fierce woman who knows what she wants and isn't afraid to take it.",
-    gender: "female",
-  },
-  {
-    id: "2",
-    image: "/assets/characters/abbas.png",
-    name: "Abbas",
-    power: "Mysterious",
-    description: "A brooding figure with secrets that unravel slowly through every chapter.",
-    gender: "male",
-  },
-  {
-    id: "3",
-    image: "/assets/characters/akshath.png",
-    name: "Akshath",
-    power: "Dominant",
-    description: "A commanding presence that demands attention and respect.",
-    gender: "male",
-  },
-  {
-    id: "4",
-    image: "/assets/characters/alisha.png",
-    name: "Alisha",
-    power: "Seductive",
-    description: "A woman whose charm is impossible to resist.",
-    gender: "female",
-  },
-  {
-    id: "5",
-    image: "/assets/characters/ananya.png",
-    name: "Ananya",
-    power: "Intriguing",
-    description: "A mysterious woman who draws everyone into her captivating world.",
-    gender: "female",
-  },
-  {
-    id: "6",
-    image: "/assets/characters/Arjun.png",
-    name: "Arjun",
-    power: "Intense",
-    description: "A man whose intensity burns through every interaction.",
-    gender: "male",
-  },
-  {
-    id: "7",
-    image: "/assets/characters/kanav.png",
-    name: "Kanav",
-    power: "Obsessive",
-    description: "A powerful man whose obsession becomes all-consuming and irresistible.",
-    gender: "male",
-  },
-  {
-    id: "8",
-    image: "/assets/characters/meera.png",
-    name: "Meera",
-    power: "Captivating",
-    description: "A captivating soul that leaves everyone wanting more.",
-    gender: "female",
-  },
-  {
-    id: "9",
-    image: "/assets/characters/riya.png",
-    name: "Riya",
-    power: "Alluring",
-    description: "An alluring woman who knows her worth.",
-    gender: "female",
-  },
-  {
-    id: "10",
-    image: "/assets/characters/sana.png",
-    name: "Sana",
-    power: "Enchanting",
-    description: "An enchanting presence that mesmerizes all.",
-    gender: "female",
-  },
-  {
-    id: "11",
-    image: "/assets/characters/shankar.png",
-    name: "Shankar",
-    power: "Magnetic",
-    description: "A magnetic personality that draws everyone in.",
-    gender: "male",
-  },
-  {
-    id: "12",
-    image: "/assets/characters/sia.png",
-    name: "Sia",
-    power: "Powerful",
-    description: "A powerful figure with an undeniable presence.",
-    gender: "female",
-  },
+const featuredCharacters: any[] = [];
+
+const mockCharacters = [
+  { id: 1, name: "Aarohi", image: "/character/aarohi.png" },
+  { id: 2, name: "Abbas", image: "/character/abbas.png" },
+  { id: 3, name: "Akshath", image: "/character/akshath.png" },
+  { id: 4, name: "Alisha", image: "/character/alisha.png" },
+  { id: 5, name: "Ananya", image: "/character/ananya.png" },
+  { id: 6, name: "Arjun", image: "/character/Arjun.png" },
+  { id: 7, name: "Kanav", image: "/character/kanav.png" },
+  { id: 8, name: "Meera", image: "/character/meera.png" },
+  { id: 9, name: "Riya", image: "/character/riya.png" },
+  { id: 10, name: "Sana", image: "/character/sana.png" },
+  { id: 11, name: "Shankar", image: "/character/shankar.png" },
+  { id: 12, name: "Sia", image: "/character/sia.png" }
 ];
 
-const quotes = [
-  {
-    id: "1",
-    text: "In every love story, there's a moment where you stop thinking and just feel.",
-    author: "Elena Sinclair",
-  },
-  {
-    id: "2",
-    text: "The most dangerous thing is when two souls recognize each other.",
-    author: "Victoria Blake",
-  },
-  {
-    id: "3",
-    text: "Love is not about finding someone you can live with. It's about finding someone you can't imagine living without.",
-    author: "Sophie Chen",
-  },
-  {
-    id: "4",
-    text: "Sometimes the greatest passion stories are the ones no one else understands.",
-    author: "Aria Rose",
-  },
+const mockCategories = [
+  { id: "everyday-chemistry", name: "Everyday chemistry", count: 1 },
+  { id: "slow-emotional", name: "Slow & emotional", count: 1 },
+  { id: "travel-temporary", name: "Travel & Temporary love", count: 1 },
+  { id: "age-gap-romance", name: "Age Gap Romance", count: 1 }
 ];
+
+const quotes: any[] = [];
 
 export default function Index() {
   const { stories, loading } = useApp();
@@ -142,36 +45,40 @@ export default function Index() {
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
   const [trendingStories, setTrendingStories] = useState<any[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
 
-  // Fetch trending stories
+  // Fetch trending stories and categories
   useEffect(() => {
-    const fetchTrending = async () => {
+    const fetchData = async () => {
       setTrendingLoading(true);
       try {
-        const trending = await getTrendingStories();
-        console.log('Fetched trending stories:', trending);
+        const [trending, categoriesData] = await Promise.all([
+          getTrendingStories(),
+          getCategories()
+        ]);
         setTrendingStories(trending);
+        setCategories(categoriesData);
       } catch (error) {
-        console.error('Failed to fetch trending stories:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setTrendingLoading(false);
       }
     };
     
-    fetchTrending();
+    fetchData();
   }, []);
 
-  // Show loading state with faster timeout
-  if (loading) {
-    return (
-      <div className="bg-black min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-white text-sm">Loading stories...</p>
-        </div>
-      </div>
-    );
-  }
+  // Show content immediately, no loading screen
+  // if (loading && stories.length === 0) {
+  //   return (
+  //     <div className="bg-black min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+  //         <p className="text-white text-sm">Loading stories...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const filteredCharacters = featuredCharacters.filter(
     (char) => genderFilter === "all" || char.gender === genderFilter
@@ -243,62 +150,26 @@ export default function Index() {
       {/* Featured Characters */}
       <section className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold text-white">
-              Featured Characters
-            </h2>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setGenderFilter("all")}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                  genderFilter === "all"
-                    ? "bg-primary text-white"
-                    : "bg-white/10 text-gray-400 hover:bg-white/20"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setGenderFilter("male")}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                  genderFilter === "male"
-                    ? "bg-primary text-white"
-                    : "bg-white/10 text-gray-400 hover:bg-white/20"
-                }`}
-              >
-                Male
-              </button>
-              <button
-                onClick={() => setGenderFilter("female")}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                  genderFilter === "female"
-                    ? "bg-primary text-white"
-                    : "bg-white/10 text-gray-400 hover:bg-white/20"
-                }`}
-              >
-                Female
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayedCharacters.map((character) => (
-              <CharacterCard
-                key={character.id}
-                {...character}
-                onCardClick={() => console.log("Character:", character.name)}
-              />
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-12">
+            Featured Characters
+          </h2>
+          <div className="grid grid-cols-4 gap-6">
+            {mockCharacters.map((character) => (
+              <div key={character.id} className="flex flex-col items-center group cursor-pointer">
+                <div className="w-full aspect-square overflow-hidden rounded-lg border-2 border-purple-600/50 group-hover:border-purple-600 transition-all duration-300 group-hover:scale-105">
+                  <img
+                    src={character.image}
+                    alt={character.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = '/placeholder.svg';
+                    }}
+                  />
+                </div>
+                <p className="text-white text-sm mt-3 group-hover:text-purple-300 transition-colors font-medium">{character.name}</p>
+              </div>
             ))}
           </div>
-          {filteredCharacters.length > 4 && (
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => setShowAllCharacters(!showAllCharacters)}
-                className="px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                {showAllCharacters ? "Show Less" : "View More"}
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
@@ -308,17 +179,12 @@ export default function Index() {
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-12">
             Explore by Category
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <CategoryCard
-                key={category.id}
-                id={category.id}
-                image={category.image}
-                name={category.name}
-                icon={category.icon}
-                count={category.storyCount}
-                onCardClick={() => console.log("Category:", category.name)}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {mockCategories.map((category) => (
+              <div key={category.id} className="bg-[#050505] border border-purple-600/50 rounded-lg p-4 hover:border-purple-600 transition-colors cursor-pointer">
+                <h3 className="text-white font-medium mb-2">{category.name}</h3>
+                <p className="text-gray-400 text-sm">{category.count} Stories</p>
+              </div>
             ))}
           </div>
         </div>
@@ -352,7 +218,7 @@ export default function Index() {
       <Spotlight items={spotlightItems} autoRotateInterval={5000} />
 
       {/* Quotes Carousel */}
-      <QuotesCarousel quotes={quotes} rotationInterval={4000} />
+      {quotes.length > 0 && <QuotesCarousel quotes={quotes} rotationInterval={4000} />}
 
       {/* Upcoming Releases */}
       <UpcomingReleases items={upcomingReleases} />

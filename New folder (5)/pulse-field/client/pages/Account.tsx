@@ -56,7 +56,7 @@ export default function Account() {
     );
   }
 
-  // Get stories with proper image URLs from backend
+  // Get stories with reading progress
   const continueReadingStories = user.readingHistory
     .sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime())
     .slice(0, 8)
@@ -68,8 +68,6 @@ export default function Account() {
             progress: history.progressPercentage,
             lastChapter: history.lastChapterRead,
             lastReadAt: history.lastReadAt,
-            // Ensure proper image URL
-            coverImage: story.coverImage.startsWith('http') ? story.coverImage : `https://velvetwords-backend.vercel.app${story.coverImage}`
           }
         : null;
     })
@@ -97,11 +95,11 @@ export default function Account() {
     <div className="bg-black min-h-screen">
       <Navigation />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Account Header */}
-        <div className="mb-16">
+        <div className="mb-20">
           <div
-            className={`bg-dark-gray border-[3px] rounded-lg p-8 transition-all ${
+            className={`bg-dark-gray border-[3px] rounded-lg p-10 transition-all ${
               isSubscriptionActive ? "border-primary shadow-[0_0_30px_rgba(106,13,173,0.4)]" : "border-white/20"
             }`}
           >
@@ -201,6 +199,9 @@ export default function Account() {
                         src={story.coverImage}
                         alt={story.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = '/assets/The-Silence-We-Didnt-Break.png';
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                     </div>

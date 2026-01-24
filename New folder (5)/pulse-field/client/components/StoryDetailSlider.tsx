@@ -82,21 +82,22 @@ export default function StoryDetailSlider({
         <button
           onClick={onClose}
           className="
-            absolute top-4 right-4 z-10
-            p-2 rounded-lg
-            text-white/70 hover:text-white
-            bg-white/5 hover:bg-white/10
-            border border-white/10 hover:border-purple-600
+            absolute top-16 right-50 z-10
+            p-3 rounded-lg
+            text-white bg-purple-600
+            border-2 border-purple-500
             transition-all duration-300
-            hover:shadow-[0_0_15px_rgba(124,58,237,0.5)]
+            hover:bg-purple-700 hover:border-purple-400
+            shadow-[0_0_20px_rgba(124,58,237,0.8)]
+            hover:shadow-[0_0_30px_rgba(124,58,237,1)]
           "
           aria-label="Close story details"
         >
-          <X className="w-5 h-5" />
+          <X className="w-6 h-6" />
         </button>
 
         {/* Content */}
-        <div className="p-6 pt-16 pb-8">
+        <div className="p-6 pt-28 pb-8">
           {/* Thumbnail */}
           <div className="mb-6">
             <div
@@ -144,17 +145,6 @@ export default function StoryDetailSlider({
                   {story.readTime}
                 </span>
               )}
-              <span
-                className="
-                  px-3 py-1 rounded-full
-                  bg-purple-600/20 border border-purple-600/50
-                  text-purple-400 text-xs font-medium
-                  flex items-center gap-1
-                "
-              >
-                <Sparkles className="w-3 h-3" />
-                AI-Generated
-              </span>
             </div>
           )}
 
@@ -186,21 +176,7 @@ export default function StoryDetailSlider({
               Read Story
             </button>
 
-            {/* Secondary Button */}
-            <button
-              className="
-                w-full py-3.5 rounded-xl
-                bg-transparent border-[1.5px] border-purple-600
-                text-white font-semibold text-base
-                transition-all duration-300 ease-in-out
-                hover:bg-purple-600/10
-                hover:scale-[1.02]
-                hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]
-                active:scale-[0.98]
-              "
-            >
-              Add to Library
-            </button>
+
           </div>
         </div>
       </div>

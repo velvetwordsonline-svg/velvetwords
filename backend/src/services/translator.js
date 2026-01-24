@@ -44,33 +44,28 @@ class TranslationService {
 
   async translateChapter(chapter) {
     try {
-      // Simplified version - skip translation for now to avoid API issues
+      // Optimize content - remove empty blocks and compress text
+      const optimizedBlocks = chapter.blocks
+        .filter(block => block.data && block.data.trim().length > 0)
+        .map(block => ({
+          type: block.type,
+          data: block.data.trim(),
+          order: block.order
+        }));
+      
       return {
         title: {
-          en: chapter.title,
-          hi: chapter.title,
-          hinglish: chapter.title
+          en: chapter.title.trim()
         },
         content: {
-          en: chapter.blocks,
-          hi: chapter.blocks,
-          hinglish: chapter.blocks
+          en: optimizedBlocks
         }
       };
     } catch (error) {
-      console.error('Translation failed, using original content:', error);
-      // Fallback to original content
+      console.error('Translation failed:', error);
       return {
-        title: {
-          en: chapter.title,
-          hi: chapter.title,
-          hinglish: chapter.title
-        },
-        content: {
-          en: chapter.blocks,
-          hi: chapter.blocks,
-          hinglish: chapter.blocks
-        }
+        title: { en: chapter.title || 'Untitled' },
+        content: { en: [] }
       };
     }
   }

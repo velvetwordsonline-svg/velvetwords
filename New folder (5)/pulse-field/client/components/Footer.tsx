@@ -1,25 +1,13 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Zap, Mail } from "lucide-react";
+import { Zap } from "lucide-react";
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
-      setEmail("");
-      setTimeout(() => setSubscribed(false), 3000);
-    }
-  };
 
   return (
     <footer className="bg-black border-t-[3px] border-primary mt-24">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -84,33 +72,15 @@ export default function Footer() {
                   Payment Policy
                 </Link>
               </li>
+              <li>
+                <Link to="/contact" className="text-gray-400 hover:text-primary transition-colors text-sm">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Newsletter</h4>
-            <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary text-sm"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
-                >
-                  <Mail className="w-4 h-4" />
-                </button>
-              </div>
-              {subscribed && (
-                <p className="text-primary text-xs">Thanks for subscribing!</p>
-              )}
-            </form>
-          </div>
+
         </div>
 
         {/* Divider */}

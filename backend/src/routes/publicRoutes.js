@@ -13,7 +13,22 @@ router.get('/stories', async (req, res) => {
       status: 'published',
       isDeleted: { $ne: true }
     };
-    if (category) query.category = category;
+    
+    // Handle category filtering - match both ID format and name format
+    if (category) {
+      const categoryMap = {
+        'everyday-chemistry': 'Everyday Chemistry',
+        'slow-emotional': 'Slow & Emotional', 
+        'city-travel': 'City Travel & Temporary Love',
+        'forbidden-risky': 'Forbidden & Risky Desire',
+        'midnight-confession': 'Midnight & Confession',
+        'power-elite': 'Power Identity & Elite Lives'
+      };
+      
+      // Check if category is an ID or name
+      const categoryName = categoryMap[category] || category;
+      query.category = categoryName;
+    }
 
     const stories = await Story.find(query).sort({ createdAt: -1 });
     
@@ -271,6 +286,41 @@ router.get('/trending', async (req, res) => {
     }));
 
     res.json({ data: formatted });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get categories from stories
+router.get('/categories', async (req, res) => {
+  try {
+    const { lang = 'en' } = req.query;
+    
+    // Get all published stories to extract categories
+    const stories = await Story.find({ 
+      status: 'published',
+      isDeleted: { $ne: true }
+    });
+    
+    // Extract unique categories with counts
+    const categoryMap = new Map();
+    stories.forEach(story => {
+      if (story.category) {
+        const count = categoryMap.get(story.category) || 0;
+        categoryMap.set(story.category, count + 1);
+      }
+    });
+    
+    const categories = Array.from(categoryMap.entries()).map(([name, count]) => ({
+      id: name.toLowerCase().replace(/\s+/g, '-'),
+      name,
+      count,
+      description: `${count} stories in ${name}`,
+      image: `/assets/categories/${name.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+      icon: 'Heart'
+    }));
+    
+    res.json(categories);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

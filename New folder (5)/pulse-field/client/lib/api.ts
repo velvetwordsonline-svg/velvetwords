@@ -1,26 +1,48 @@
-const API_BASE = 'https://velvetwords-backend.vercel.app/api';
+const API_BASE = 'http://localhost:5001/api';
+
+// Cache for API responses
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+function getCachedData(key: string) {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedData(key: string, data: any) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
 
 export async function getTrendingStories(lang = 'en') {
+  const cacheKey = `trending-${lang}`;
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+  
   try {
     const response = await fetch(`${API_BASE}/trending?lang=${lang}`);
     if (response.ok) {
       const result = await response.json();
       const stories = result.data || [];
       
-      // Format stories to match expected structure
-      return stories.map(story => ({
+      const formatted = stories.map(story => ({
         id: story._id || story.id,
         title: story.title,
         author: story.author,
-        description: story.description || 'No description available',
-        coverImage: story.thumbnail || '/assets/portrait/1p.jpg',
-        genre: story.category || 'Romance',
-        rating: story.rating || 4.5,
-        reviewCount: story.reviewCount || 100,
-        totalChapters: story.totalChapters || 1,
-        isTrending: story.isTrending || true,
-        createdAt: story.createdAt || new Date().toISOString()
+        description: story.description,
+        coverImage: story.thumbnail,
+        genre: story.category,
+        rating: story.rating,
+        reviewCount: story.reviewCount,
+        totalChapters: story.totalChapters,
+        isTrending: story.isTrending,
+        createdAt: story.createdAt
       }));
+      
+      setCachedData(cacheKey, formatted);
+      return formatted;
     }
     return [];
   } catch (error) {
@@ -31,82 +53,134 @@ export async function getTrendingStories(lang = 'en') {
 
 export async function getStoriesByCategory(category = null, lang = 'en') {
   try {
-    // Use aggressive caching to reduce Vercel bandwidth
-    const cacheKey = `stories_${category || 'all'}_${lang}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
-    const now = Date.now();
+    let url = `${API_BASE}/stories`;
+    if (category) url += `?category=${category}`;
     
-    // Use cache if less than 15 minutes old
-    if (cachedData && cacheTimestamp) {
-      const cacheAge = now - parseInt(cacheTimestamp);
-      if (cacheAge < 15 * 60 * 1000) { // 15 minutes
-        console.log('Using cached category data to save bandwidth');
-        return JSON.parse(cachedData);
-      }
-    }
+    const response = await fetch(url);
     
-    // Only fetch if cache is old
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
-    
-    let url = `${API_BASE}/stories?lang=${lang}`;
-    if (category) url += `&category=${category}`;
-    
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' }
-      });
-      clearTimeout(timeoutId);
+    if (response.ok) {
+      const data = await response.json();
       
-      if (response.ok) {
-        const backendStories = await response.json();
-        const formattedStories = backendStories.map(story => ({
-          id: story.id || story._id,
+      if (data && data.length > 0) {
+        return data.map(story => ({
+          id: story._id || story.id,
           title: story.title,
           author: story.author,
           description: story.description,
           category: story.category,
-          totalChapters: story.totalChapters || 1,
-          coverImage: story.thumbnail || '/assets/portrait/1p.jpg'
+          totalChapters: story.totalChapters,
+          coverImage: story.thumbnail,
+          rating: story.rating,
+          reviewCount: story.reviewCount,
+          genre: story.category,
+          isTrending: story.isTrending,
+          createdAt: story.createdAt
         }));
-        
-        // Cache the result
-        localStorage.setItem(cacheKey, JSON.stringify(formattedStories));
-        localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
-        return formattedStories;
       }
-    } catch (error) {
-      clearTimeout(timeoutId);
-    }
-    
-    // Fallback to any cached data (even if old)
-    if (cachedData) {
-      console.log('Using old cached data as fallback');
-      return JSON.parse(cachedData);
     }
     
     return [];
+    
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error fetching from database:', error);
     return [];
   }
 }
 
 export async function getStory(id, lang = 'en') {
-  const response = await fetch(`${API_BASE}/stories/${id}?lang=${lang}`);
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE}/stories/${id}`);
+    
+    if (response.ok) {
+      const story = await response.json();
+      
+      return {
+        id: story._id || story.id,
+        title: story.title,
+        author: story.author,
+        description: story.description,
+        category: story.category,
+        totalChapters: story.totalChapters,
+        coverImage: story.thumbnail,
+        rating: story.rating,
+        reviewCount: story.reviewCount,
+        genre: story.category,
+        isTrending: story.isTrending,
+        createdAt: story.createdAt
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching story from database:', error);
+    return null;
+  }
 }
 
 export async function getChapters(storyId, lang = 'en') {
-  const response = await fetch(`${API_BASE}/stories/${storyId}/chapters?lang=${lang}`);
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE}/stories/${storyId}/chapters`);
+    
+    if (response.ok) {
+      const chapters = await response.json();
+      
+      return chapters.map((chapter: any) => ({
+        id: chapter._id || chapter.id,
+        storyId: chapter.storyId || storyId,
+        number: chapter.chapterNumber || chapter.number,
+        title: chapter.title,
+        content: chapter.content,
+        estimatedReadTime: chapter.estimatedReadTime,
+        isLocked: false,
+        createdAt: chapter.createdAt
+      }));
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error fetching chapters from database:', error);
+    return [];
+  }
 }
 
 export async function getChapter(chapterId, lang = 'en') {
-  const response = await fetch(`${API_BASE}/chapters/${chapterId}?lang=${lang}`);
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE}/chapters/${chapterId}`);
+    
+    if (response.ok) {
+      const chapter = await response.json();
+      
+      return {
+        id: chapter._id || chapter.id,
+        storyId: chapter.storyId,
+        number: chapter.chapterNumber || chapter.number,
+        title: chapter.title,
+        content: chapter.content,
+        estimatedReadTime: chapter.estimatedReadTime,
+        images: chapter.images,
+        isLocked: false,
+        createdAt: chapter.createdAt
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching chapter from database:', error);
+    return null;
+  }
+}
+
+export async function getCategories(lang = 'en') {
+  try {
+    const response = await fetch(`${API_BASE}/categories?lang=${lang}`);
+    if (response.ok) {
+      return await response.json();
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
 }
 
 export async function authenticatePhone(phone) {

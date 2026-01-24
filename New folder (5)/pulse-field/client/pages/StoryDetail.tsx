@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, Clock, Lock, Play, Bookmark } from "lucide-react";
 import Navigation from "@/components/Navigation";
@@ -11,9 +11,42 @@ export default function StoryDetail() {
   const navigate = useNavigate();
   const { getStoryById, getChaptersByStoryId, canAccessChapter, verifyPhoneNumber, selectSubscription } = useApp();
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
+  const [story, setStory] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const story = id ? getStoryById(id) : null;
+  // Fetch story data
+  useEffect(() => {
+    if (!id) return;
+    
+    const fetchStory = async () => {
+      setLoading(true);
+      try {
+        const storyData = await getStoryById(id);
+        setStory(storyData);
+      } catch (error) {
+        console.error('Failed to fetch story:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStory();
+  }, [id, getStoryById]);
+
   const chapters = id ? getChaptersByStoryId(id) : [];
+
+  if (loading) {
+    return (
+      <div className="bg-black min-h-screen">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-white text-sm">Loading story...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!story) {
     return (
@@ -69,11 +102,11 @@ export default function StoryDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
 
         {/* Content */}
-        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-8">
+        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-1">
           <div className="max-w-2xl">
-            <p className="text-secondary font-bold text-sm mb-2 uppercase">{story.genre}</p>
-            <h1 className="text-5xl sm:text-6xl font-bold text-white mb-4">{story.title}</h1>
-            <p className="text-gray-300 text-lg mb-6">{story.description}</p>
+            <p className="text-secondary font-bold text-sm mb-1 uppercase">{story.genre}</p>
+            <h1 className="text-5xl sm:text-6xl font-bold text-white mb-2">{story.title}</h1>
+            <p className="text-gray-300 text-lg mb-2">{story.description}</p>
 
             <div className="flex flex-wrap gap-6 items-center">
               <div className="flex items-center gap-2">

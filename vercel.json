@@ -1,14 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "New folder (5)/pulse-field/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "New folder (5)/pulse-field/dist"
-      }
-    }
-  ],
+  "buildCommand": "cd 'New folder (5)/pulse-field' && npm run build:client",
+  "outputDirectory": "New folder (5)/pulse-field/dist",
   "routes": [
     {
       "handle": "filesystem"

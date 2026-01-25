@@ -1,5 +1,4 @@
 {
-  "buildCommand": "cd 'New folder (5)/pulse-field' && npm run build",
   "outputDirectory": "New folder (5)/pulse-field/dist/spa",
   "rewrites": [
     {

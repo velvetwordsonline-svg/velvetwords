@@ -108,7 +108,7 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
         className="w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-white/5"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-b from-black to-transparent z-30 px-6 py-12 pt-20">
+        <div className="sticky top-0 bg-gradient-to-b from-black to-transparent z-30 px-6 py-12 pt-32">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 text-center">{currentChapter.title}</h1>
           <p className="text-gray-400 text-center">Chapter {currentChapter.chapterNumber}</p>
         </div>

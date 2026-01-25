@@ -4,7 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import StoryCard from "@/components/StoryCard";
-import CharacterCard from "@/components/CharacterCard";
+import FeaturedCharacters from "@/components/FeaturedCharacters";
 import CategoryCard from "@/components/CategoryCard";
 import Spotlight from "@/components/Spotlight";
 import QuotesCarousel from "@/components/QuotesCarousel";
@@ -148,30 +148,7 @@ export default function Index() {
       </section>
 
       {/* Featured Characters */}
-      <section className="py-8 sm:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-12">
-            Featured Characters
-          </h2>
-          <div className="grid grid-cols-4 gap-6">
-            {mockCharacters.map((character) => (
-              <div key={character.id} className="flex flex-col items-center group cursor-pointer">
-                <div className="w-full aspect-square overflow-hidden rounded-lg border-2 border-purple-600/50 group-hover:border-purple-600 transition-all duration-300 group-hover:scale-105">
-                  <img
-                    src={character.image}
-                    alt={character.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = '/placeholder.svg';
-                    }}
-                  />
-                </div>
-                <p className="text-white text-sm mt-3 group-hover:text-purple-300 transition-colors font-medium">{character.name}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedCharacters />
 
       {/* Categories */}
       <section className="py-8 sm:py-12">

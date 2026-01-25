@@ -93,7 +93,7 @@ export default function StoryDetail() {
       <Navigation />
 
       {/* Hero Banner */}
-      <div className="relative h-96 overflow-hidden">
+      <div className="relative h-85 pt-22 ">
         <img
           src={story.coverImage}
           alt={story.title}
@@ -102,7 +102,7 @@ export default function StoryDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
 
         {/* Content */}
-        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-1">
+        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-16 sm:pb-1">
           <div className="max-w-2xl">
             <p className="text-secondary font-bold text-sm mb-1 uppercase">{story.genre}</p>
             <h1 className="text-5xl sm:text-6xl font-bold text-white mb-2">{story.title}</h1>

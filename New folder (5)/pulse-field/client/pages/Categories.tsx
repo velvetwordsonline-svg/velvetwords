@@ -293,7 +293,7 @@ When she left, the room felt cavernous. Raghav picked up his pen, but the ink ha
           {/* Featured Characters Section */}
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-4">Featured Characters</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-4 mt-8">
+            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-4 mt-8">
               {mockCharacters.map((character) => (
                 <div key={character.id} className="flex flex-col items-center group cursor-pointer">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-600/50 group-hover:border-purple-600 transition-all duration-300 group-hover:scale-110">
@@ -312,78 +312,65 @@ When she left, the room felt cavernous. Raghav picked up his pen, but the ink ha
             </div>
           </div>
 
-          {/* Explore by Category Section */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">Explore by Category</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {mockCategories.map((category) => (
-                <div key={category.id} className="bg-[#050505] border border-purple-600/50 rounded-lg p-4 hover:border-purple-600 transition-colors cursor-pointer">
-                  <h3 className="text-white font-medium mb-2">{category.name}</h3>
-                  <p className="text-gray-400 text-sm">{category.count} Stories</p>
-                </div>
-              ))}
-            </div>
-            
-            {/* Category Filter Dropdown */}
-            <div className="flex justify-center gap-4">
-              <div className="relative">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="
-                    px-8 py-3 rounded-full border-[1.5px] font-medium text-sm
-                    transition-all duration-300 ease-in-out
-                    border-purple-600 bg-purple-600/20 text-white 
-                    shadow-[0_0_20px_rgba(124,58,237,0.5)]
-                    hover:bg-purple-600/30 hover:shadow-[0_0_30px_rgba(124,58,237,0.7)]
-                    active:scale-95
-                    flex items-center gap-2
-                  "
-                >
-                  {activeCategory ? categories.find(c => c.id === activeCategory)?.name : "All Categories"}
-                  <svg className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {isDropdownOpen && (
-                  <div className="absolute top-full mt-2 w-80 bg-[#050505] border border-purple-600 rounded-xl shadow-[0_0_30px_rgba(124,58,237,0.6)] z-50">
-                    <div className="p-2">
+          {/* Category Filter Dropdown */}
+          <div className="flex justify-center mb-16 gap-4">
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="
+                  px-8 py-3 rounded-full border-[1.5px] font-medium text-sm
+                  transition-all duration-300 ease-in-out
+                  border-purple-600 bg-purple-600/20 text-white 
+                  shadow-[0_0_20px_rgba(124,58,237,0.5)]
+                  hover:bg-purple-600/30 hover:shadow-[0_0_30px_rgba(124,58,237,0.7)]
+                  active:scale-95
+                  flex items-center gap-2
+                "
+              >
+                {activeCategory ? categories.find(c => c.id === activeCategory)?.name : "All Categories"}
+                <svg className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {isDropdownOpen && (
+                <div className="absolute top-full mt-2 w-80 bg-[#050505] border border-purple-600 rounded-xl shadow-[0_0_30px_rgba(124,58,237,0.6)] z-50">
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setActiveCategory(null);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-600/20 text-white transition-colors"
+                    >
+                      <div className="font-medium">All Categories</div>
+                    </button>
+                    {categories.map((category) => (
                       <button
+                        key={category.id}
                         onClick={() => {
-                          setActiveCategory(null);
+                          setActiveCategory(category.id);
                           setIsDropdownOpen(false);
                         }}
                         className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-600/20 text-white transition-colors"
                       >
-                        <div className="font-medium">All Categories</div>
+                        <div className="font-medium">{category.name}</div>
+                        <div className="text-sm text-gray-400">{category.count} Stories</div>
                       </button>
-                      {categories.map((category) => (
-                        <button
-                          key={category.id}
-                          onClick={() => {
-                            setActiveCategory(category.id);
-                            setIsDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-600/20 text-white transition-colors"
-                        >
-                          <div className="font-medium">{category.name}</div>
-                          <div className="text-sm text-gray-400">{category.count} Stories</div>
-                        </button>
-                      ))}
-                    </div>
+                    ))}
                   </div>
-                )}
-              </div>
-              
-              {/* Refresh Button */}
-              <button
-                onClick={loadData}
-                className="px-4 py-3 rounded-full border border-purple-600 text-purple-400 hover:bg-purple-600/20 transition-colors"
-                title="Refresh Stories"
-              >
-                🔄
-              </button>
+                </div>
+              )}
             </div>
+            
+            {/* Refresh Button */}
+            <button
+              onClick={loadData}
+              className="px-4 py-3 rounded-full border border-purple-600 text-purple-400 hover:bg-purple-600/20 transition-colors"
+              title="Refresh Stories"
+            >
+              🔄
+            </button>
           </div>
 
           {/* Loading State */}
@@ -413,7 +400,7 @@ When she left, the room felt cavernous. Raghav picked up his pen, but the ink ha
                   "
                 >
                   {/* Thumbnail */}
-                  <div className="w-full h-90 bg-gray-800 overflow-hidden rounded-t-xl">
+                  <div className="relative w-full h-90 bg-gray-800 overflow-hidden rounded-t-xl">
                     <img
                       src={story.coverImage || '/placeholder.svg'}
                       alt={story.title}
@@ -422,6 +409,7 @@ When she left, the room felt cavernous. Raghav picked up his pen, but the ink ha
                         e.currentTarget.src = '/placeholder.svg';
                       }}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
                   </div>
                   {/* Story Info */}
                   <div className="p-4 flex-1 flex flex-col justify-between">

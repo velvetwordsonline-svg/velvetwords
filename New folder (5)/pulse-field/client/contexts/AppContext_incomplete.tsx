@@ -47,7 +47,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       title: "The Silence We Didn't Break",
       author: "Unknown Author",
       description: "Two men, parallel yet close, navigate unspoken desire in a high-tech world, finding connection through silence, code, and subtle intimacy.",
-      coverImage: "/assets/The-Silence-We-Didn’t-Break.png",
+      coverImage: "/assets/The-Silence-We-Didnt-Break.png",
       rating: 4.5,
       reviewCount: 89,
       totalChapters: 3,

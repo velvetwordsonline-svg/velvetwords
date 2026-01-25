@@ -19,7 +19,6 @@ interface ReaderProps {
 
 export default function Reader({ storyId, chapterId, chapters, currentChapter, onNavigate }: ReaderProps) {
   const { updateReadingProgress, getChaptersByStoryId, canAccessChapter, user } = useApp();
-  const [showControls, setShowControls] = useState(false);
   const [fontSize, setFontSize] = useState(16);
   const [lineHeight, setLineHeight] = useState(1.8);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -74,15 +73,15 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
     return () => ref?.removeEventListener("scroll", handleScroll);
   }, [storyId, currentChapter, updateReadingProgress]);
 
-  // Auto-hide controls
-  useEffect(() => {
-    if (showControls) {
-      const hideControlsTimer = setTimeout(() => {
-        setShowControls(false);
-      }, 5000);
-      return () => clearTimeout(hideControlsTimer);
-    }
-  }, [showControls]);
+  // Auto-hide controls - REMOVED to keep controls persistent
+  // useEffect(() => {
+  //   if (showControls) {
+  //     const hideControlsTimer = setTimeout(() => {
+  //       setShowControls(false);
+  //     }, 5000);
+  //     return () => clearTimeout(hideControlsTimer);
+  //   }
+  // }, [showControls]);
 
   if (!currentChapter) {
     return (
@@ -200,53 +199,44 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
         </div>
       </div>
 
-      {/* Bottom Controls Bar */}
-      {showControls && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent border-t border-primary/30 translate-y-0 z-30">
-          <div className="max-w-3xl mx-auto px-6 py-4">
-            <div className="space-y-4">
-              {/* Controls */}
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setFontSize(Math.max(12, fontSize - 2))}
-                    className="px-3 py-2 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors text-sm font-bold"
-                  >
-                    A−
-                  </button>
-                  <span className="text-white text-sm px-2">{fontSize}px</span>
-                  <button
-                    onClick={() => setFontSize(Math.min(24, fontSize + 2))}
-                    className="px-3 py-2 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors text-sm font-bold"
-                  >
-                    A+
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <select
-                    value={lineHeight}
-                    onChange={(e) => setLineHeight(parseFloat(e.target.value))}
-                    className="px-3 py-2 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors text-sm font-bold border border-primary/30"
-                  >
-                    <option value={1.4}>1.4 Lines</option>
-                    <option value={1.6}>1.6 Lines</option>
-                    <option value={1.8}>1.8 Lines</option>
-                    <option value={2}>2.0 Lines</option>
-                  </select>
-                </div>
-
+      {/* Bottom Controls Bar - Always Visible */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent border-t border-primary/30 translate-y-0 z-30">
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <div className="space-y-4">
+            {/* Controls */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowControls(false)}
-                  className="p-2 text-white hover:text-primary transition-colors"
+                  onClick={() => setFontSize(Math.max(12, fontSize - 2))}
+                  className="px-3 py-2 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors text-sm font-bold"
                 >
-                  <X className="w-5 h-5" />
+                  A−
                 </button>
+                <span className="text-white text-sm px-2">{fontSize}px</span>
+                <button
+                  onClick={() => setFontSize(Math.min(24, fontSize + 2))}
+                  className="px-3 py-2 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors text-sm font-bold"
+                >
+                  A+
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={lineHeight}
+                  onChange={(e) => setLineHeight(parseFloat(e.target.value))}
+                  className="px-3 py-2 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors text-sm font-bold border border-primary/30"
+                >
+                  <option value={1.4}>1.4 Lines</option>
+                  <option value={1.6}>1.6 Lines</option>
+                  <option value={1.8}>1.8 Lines</option>
+                  <option value={2}>2.0 Lines</option>
+                </select>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Top Controls (Always Visible) */}
       <div className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 sm:px-6 pt-4">
@@ -255,13 +245,6 @@ export default function Reader({ storyId, chapterId, chapters, currentChapter, o
           className="p-2 bg-black/50 hover:bg-primary/20 text-white rounded-lg transition-all"
         >
           <ArrowLeft className="w-5 h-5" />
-        </button>
-
-        <button
-          onClick={() => setShowControls(!showControls)}
-          className="p-2 bg-black/50 hover:bg-primary/20 text-white rounded-lg transition-all"
-        >
-          <Menu className="w-5 h-5" />
         </button>
       </div>
     </div>

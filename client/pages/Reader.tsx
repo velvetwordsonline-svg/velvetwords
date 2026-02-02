@@ -4,9 +4,6 @@ import Reader from "@/components/Reader";
 import SubscriptionPopup from "@/components/SubscriptionPopup";
 import { useApp } from "@/contexts/AppContext";
 
-// API Configuration
-const API_BASE = "http://localhost:5001/api";
-
 interface ChapterContent {
   id: string;
   storyId: string;

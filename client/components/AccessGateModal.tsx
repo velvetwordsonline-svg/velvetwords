@@ -94,7 +94,11 @@ export default function AccessGateModal({ isOpen, onClose, onSuccess }: AccessGa
         
         <div className="mb-6">
           <div className="w-full aspect-square bg-[#0b0b0b] rounded-xl border-[1.5px] border-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-z            <img src="http://localhost:5001/thumbnails/1768607011344-Kanav.png" alt="admin" className="w-full h-full object-cover rounded-xl" />
+            <img 
+              src={`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://velvetwords-backend.vercel.app'}/thumbnails/1768607011344-Kanav.png`} 
+              alt="admin" 
+              className="w-full h-full object-cover rounded-xl" 
+            />
           </div>
         </div>
         

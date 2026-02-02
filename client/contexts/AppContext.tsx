@@ -3,7 +3,7 @@ import { User, Story, Chapter, ReadingProgress } from "@/lib/mockData";
 import { defaultUser } from "@/lib/mockData";
 
 // API Configuration
-const API_BASE = "http://localhost:5001/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://velvetwords-backend.vercel.app/api";
 
 interface AppContextType {
   user: User | null;

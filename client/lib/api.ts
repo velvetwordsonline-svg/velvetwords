@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5001/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://velvetwords-backend.vercel.app/api';
 
 // Cache for API responses
 const cache = new Map();

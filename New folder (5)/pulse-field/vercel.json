@@ -1,29 +1,18 @@
 {
   "version": 2,
-  "framework": "vite",
-  "installCommand": "npm install",
-  "buildCommand": "npm run build:client",
-  "outputDirectory": "dist/spa",
-  "redirects": [
+  "builds": [
     {
-      "source": "/admin/:path*",
-      "destination": "https://admin-three-zeta-82.vercel.app/:path*",
-      "permanent": false
-    },
-    {
-      "source": "/admin",
-      "destination": "https://admin-three-zeta-82.vercel.app/",
-      "permanent": false
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/backend/(.*)",
-      "destination": "https://velvetwords-backend.vercel.app/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

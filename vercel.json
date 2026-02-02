@@ -1,6 +1,7 @@
 {
   "outputDirectory": "New folder (5)/pulse-field/dist",
   "buildCommand": "cd 'New folder (5)/pulse-field' && npm install && npm run build",
+  "installCommand": "cd 'New folder (5)/pulse-field' && npm install",
   "rewrites": [
     {
       "source": "/(.*)",

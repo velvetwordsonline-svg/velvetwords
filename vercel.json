@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "New folder (5)/pulse-field/dist/spa",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

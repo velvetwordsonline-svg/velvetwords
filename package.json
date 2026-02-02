@@ -1,0 +1,10 @@
+{
+  "name": "velvetwords",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd 'New folder (5)/pulse-field' && npm install && npm run build",
+    "start": "cd 'New folder (5)/pulse-field' && npm start"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
